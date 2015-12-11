@@ -3,11 +3,17 @@ Interface para controle de movimentos: Newport XPS C8 Motion Controller Software
 Desenvolvido por Patrícia Silva Domingues.
 
 **Versões usadas**
+
 Python 2.7 (limitação pela biblioteca da controladora de movimentos/Newport)
+
 PIL -> 1.1.7
+
 Numpy -> 1.6.1
+
 Scipy -> 0.9.0
+
 Scikit-image->0.11.2
+
 Matplotlib -> 1.1.1rc0
 
 
