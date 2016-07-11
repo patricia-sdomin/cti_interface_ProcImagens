@@ -1,5 +1,4 @@
 #-*- coding:utf-8 -*-
-
 from Tkinter import *
 from ttk import *
 
@@ -14,40 +13,31 @@ from ftplib import FTP
 from ftplib import FTP_TLS
 from tkMessageBox import *
 import tkMessageBox
-from tkFileDialog import askopenfilename 
-from tkMessageBox import showerror
 from PIL import Image, ImageTk, ImageDraw
 ##import Image
 ##import ImageTk
 ##import ImageDraw
 import os,sys
-
-import XPS_C8_drivers1 #biblioteca disponibilizada pela
-#fabricante da Controladora de Movimentos: Newport.
-
+import XPS_C8_drivers1
 import ScrolledText
 ##import ftputil
 
 #processamento de imagens:#:
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-
+##import matplotlib.pyplot as plt
+##import matplotlib.patches as mpatches
+##
 from skimage import data
-#from skimage.filters import threshold_otsu
-#from skimage.segmentation import clear_border
 from skimage.measure import label
-#from skimage.morphology import closing, square
 from skimage.measure import regionprops
-#from skimage.color import label2rgb
+##
 import scipy 
 from scipy import misc
 from scipy import ndimage
 from skimage import morphology
 from scipy.misc import imread
-import pylab
+##import pylab
 #fim bib proc imgs#
-
 
 # Display error function : simplify error print out and closes socket
 def displayErrorAndClose (socketId, errorCode, APIName):
@@ -274,6 +264,49 @@ def bGoShiftImg(): #aba6 img
                       richTextImg.insert(END,"\n##Ok. Moved to start position: \n#Shift (%.3f" %posIni_x + ", %.3f" %posIni_y +")\n")
                       richTextImg.see(END)
 
+def bGoShiftImgP(): #aba7 img proc
+     posIni_x = shiftXip.get()
+     posIni_y = shiftYip.get() #max x 105  max y 140
+     richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+     if ((posIni_x == " ") or (posIni_y == " ") or (posIni_x == "") or (posIni_y == "") ):
+              richTextImgP.insert(END,"\n## You must enter the SHIFT GUIDE values! ##\n")
+              richTextImgP.see(END)
+     else:
+         [Error, GroupStatus] = XY.GroupStatusGet (socketId, group)
+         if (GroupStatus == 20):
+             richTextImgP.insert(END,"\n# X and Y Positioners status: DISABLE, \nGo to Initialization Tab and use 'Enable Positioners' button. #\n")
+             richTextImgP.see(END)
+         else:
+              posIni_x = float(posIni_x)
+              posIni_y = float(posIni_y)
+              
+              if ((posIni_x > 251.00) or (posIni_y > 258.20) or (posIni_x < -148.800) or (posIni_y < -141.60)) :
+                      richTextImgP.insert(END,"\n## Maximum values: ")
+                      richTextImgP.insert(END,"\n## (X:+251.00 and Y:+258.20)mm\n")                                   
+                      richTextImgP.insert(END,"\n## Minimum values: ")
+                      richTextImgP.insert(END,"\n## (X:-148.80 and Y:-141.60)mm\n")                     
+                      richTextImgP.see(END)
+              else:
+                      if ((posIni_x < 0) or (posIni_y < 0) or (posIni_x > 130.00) or (posIni_y > 160.00)):
+                          richTextImgP.insert(END,"\n## Be careful about the draw ~direction/sense~ and the Substrate Size!! ")
+                          richTextImgP.insert(END,"\n## For this Shift Guide Value, the draw is Out \nof  'Alumina Guide'! ##\n")
+                          richTextImgP.see(END)
+                  
+                      pos_x = GUIAx - posIni_x
+                      pos_y = GUIAy - posIni_y
+                      jerktime = 0.04
+                      aceleracao = 80
+                      a= (float(aceleracao))
+                      velocidade = 20
+                      v= (float(velocidade))
+                      [errorCode, returnString] = XY.PositionerSGammaParametersSet (socketId, positionerx, v, a, jerktime, jerktime)
+                      [errorCode, returnString] = XY.PositionerSGammaParametersSet (socketId, positionery, v, a, jerktime, jerktime)   
+                      [errorCode, returnString] = XY.GroupMoveAbsolute(socketId, positionery, [pos_y]) #inic eixo Y
+                      [errorCode1, returnString1] = XY.GroupMoveAbsolute(socketId, positionerx, [pos_x]) #inic eixo X
+                      richTextImgP.insert(END,"\n##Ok. Moved to start position: \n#Shift (%.3f" %posIni_x + ", %.3f" %posIni_y +")\n")
+                      richTextImgP.see(END)
+
+
 def bGoShiftOrigin(): #aba8 origin
     status = verificar_statusXY_Basic()
     if (status ==1):
@@ -462,7 +495,7 @@ def bGoAbs():
 ##            else:
 ##
 ##                ftp = FTP("192.168.0.254")
-##                ftp.login("login", "senha")
+##                ftp.login("Administrator", "Administrator")
 ##                ftp.pwd()
 ##                ftp.cwd("public/Trajectories")
 ##                              
@@ -537,9 +570,9 @@ def bGoAbs():
 ##                else:
 ##
 ##                    ftp = FTP("192.168.0.254")
-##                    ftp.login("login", "senha")
+##                    ftp.login("Administrator", "Administrator")
 ##                    ftp.pwd()
-##                    ftp.cwd("public/...")
+##                    ftp.cwd("public/Trajectories")
 ##                                  
 ##                    try:
 ##                        gettext1(ftp, nome)
@@ -592,9 +625,9 @@ def bExec(): #execucao arquivo de trajetoria LineArc , acima spline XYZ
                     nome1 = nome1+".txt"
 
                     ftp = FTP("192.168.0.254")
-                    ftp.login("login", "senha")
+                    ftp.login("Administrator", "imp0rt@lib")
                     ftp.pwd()
-                    ftp.cwd("diretotio/diretorio/...")
+                    ftp.cwd("public/Trajectories")
                                   
                     try:
                         gettext1(ftp, nome)
@@ -629,9 +662,9 @@ def bExec(): #execucao arquivo de trajetoria LineArc , acima spline XYZ
                 else:
 
                     ftp = FTP("192.168.0.254")
-                    ftp.login("login", "senha")
+                    ftp.login("Administrator", "imp0rt@lib")
                     ftp.pwd()
-                    ftp.cwd("")#diretorio
+                    ftp.cwd("public/Trajectories")
                                   
                     try:
                         gettext1(ftp, nome)
@@ -670,6 +703,14 @@ def buttonLimparClickInit():
 def buttonLimparClickBasic():    
     if (tkMessageBox.askyesno("Question", "Do you Want to clear the form?")):
         richTextBasic.delete(1.0, END)
+
+
+def buttonLimparClickImg():    
+    if (tkMessageBox.askyesno("Question", "Do you Want to clear the form?")):
+        richTextImg.delete(1.0, END)
+def buttonLimparClickImgP():    
+    if (tkMessageBox.askyesno("Question", "Do you Want to clear the form?")):
+        richTextImgP.delete(1.0, END)
 
 
 def buttonLimparClickOrigin():    
@@ -749,7 +790,13 @@ def bLoad_file():
                 richTextTC.see(END)
 
 #*******************************************************************************************************************
-                        
+                
+##                nomeArqNovo = arq.get()
+##                nomeArqNovo = nomeArqNovo +".txt"
+##                fescala = open(nomeArqNovo, 'w')
+                fator_Escala  = float(1.0)
+##                print ("fator escala: %.2f" %fator_Escala)
+        
                 indice = 0
                 movimentoX=[]
                 movimentoY=[]
@@ -757,7 +804,10 @@ def bLoad_file():
                 linha1 = lst[0];
                 linha2 = lst[1];
                 linha3 = lst[2];
-
+##                fescala.write (linha1)
+##                fescala.write (linha2)
+##                fescala.write (linha3)
+################################################################################
 ################################################################################
                 i = 2
                 for i in range(len(lst)-2): 
@@ -787,8 +837,8 @@ def bLoad_file():
                             y1= float(y)
 ##                            print ("reprint Y:: %.2f" %y1)
                            
-
-
+##                            x2 = x1*fator_Escala
+##                            y2 = y1*fator_Escala
 ##                            print ("reprint X2::: %.2f" %x2)
 ##                            x = str(x2)
 ##                            print ("reprint X str:: " ,x)
@@ -807,23 +857,37 @@ def bLoad_file():
 ################################################################################
                     else:
                         if (A!= -1):
-
+##                            print ('.... Opa, ARCO: ')
                             Vlinha = lst[i]
                             tamanho_Vlinha = len(Vlinha)
-
+##                            print ("tamanho linha: ", tamanho_Vlinha)
                             igual = find(lst[i],'=')
-
+##                            print ("Igual pos: ", igual)
                             virgula = find(lst[i],',')
-
+##                            print ("Virgula pos: ", virgula)
                             r = Vlinha[(igual+2):(virgula)]
                                         
                             a = Vlinha[(virgula+1):(tamanho_Vlinha-1)]
                                  
-
+##                            r1= float(r)
+                                         
+##                            r2 = r1*fator_Escala
+##                            print ("reprint X2::: %.2f" %x2)
+##                            r = str(r2)
+            
+##                            fescala.write ('\nArc = '+r+','+a)
                             raio = (float(r))
                             angulo = (float(a))                
                             richTextArq.insert(END,"\nArc = %.4f" %raio+ ",%.4f" %angulo)
-                            richTextArq.see(END)                
+                            richTextArq.see(END)
+                        else:
+                            pass;
+                        
+            
+               # 
+##                richTextTC.insert(END,"\n------------------------------------------------------------------------------------" )
+##                richTextTC.insert(END,"\n## Ok. Created File:\n %s" %fescala)
+##                richTextTC.see(END)
             
             except:
                 richTextTC.insert(END,"\n------------------------------------------------------------------------------------" )
@@ -888,7 +952,9 @@ def bAdd_atualizacao(): #
                             posY = posIni_y - y1                   
                             richTextArq.insert(END,"Line = %.4f" %posX+ ",%.4f" %posY +"\n") 
                             richTextArq.see(END)
-                                           
+
+                           
+                            
 ################################################################################
                    else:
                             if (A!= -1) or (a!= -1):
@@ -1005,6 +1071,8 @@ def bAdd1(): #adiciona traj ao richtext do Arquivo
         richTextArq1.insert(END,"\n#Automatic Trajectory\nConstruction: \n # Number of Lines: %d" %nlinhas +"\n # Length: %.5f [mm]" %largura+"\n # Spacing: %.5f [mm]" %altura + " = \n # Spacing: %.5f [um]" %(altura*1000))
 #Y-xis : radioXisY e radioYxis
         
+        
+
         if (xisY == 1):
         #1a Linha:
             richTextArq.insert(END,"\nLine = -%.4f" %largura+",%.4f" %y) #1a Linha
@@ -1098,6 +1166,8 @@ def verificar_inexistencia_erro(): #se nao ha erro de linha no arquivo -
             print "error num!", error
         return error    
                 
+       
+    
 
 def bCriarArquivo():
 
@@ -1125,19 +1195,48 @@ def bCriarArquivo():
             richTextTC.see(END)
           else:
               
+              
+            
                   
             nome_swabs = nome+"-SWabs.txt"  
             nome = nome+".txt"
             
+        ##    ftp = ftplib.FTP('192.168.0.254')
+        ##    ftp = FTP("192.168.0.254/public/Trajectories/")
             ftp = FTP("192.168.0.254")
             ftp1 = FTP("192.168.0.254")
-            ftp.login("login", "senha")
-            ftp1.login("login", "senha")
+            ftp.login("Administrator", "imp0rt@lib")
+            ftp1.login("Administrator", "imp0rt@lib")
+        ##    ftp = FTP("192.168.0.254/public/Trajectories/","Administrator", "Administrator", )
+        ##    ftp.login("Administrator","Admivgfnistrator")
+        ##    ftp.retrlines('LIST')
             ftp.pwd()
             ftp.cwd("public/Trajectories")
             ftp1.pwd()
             ftp1.cwd("public/traj-sw")
-                    
+            
+        ##    lst = list(im.getdata())
+        ##    lista_arqs = list(ftp.retrlines('LIST')       )
+        ##    lista_arqs = list(ftp.retrlines('NLST'))
+            
+        ##    richTextTC.insert(1.0,"\n\INICIO arquivos do diretorio \n\n")
+        ##    richTextArq1.insert(END,"\n Loop = %d" %loop)
+        ##    richTextTC.insert(1.0,"%s" %((ftp.retrlines('NLST')).readlines))
+        ##    lst = ftp.dir()
+
+        ##    filenames = []
+            
+        ##    ftp.retrlines('NLST', filenames.append)
+        ##    x = len(filenames)
+        ##    richTextTC.insert(END,"X: %d" %x)
+        #imprimir todos nomes:
+            
+        ##    for i in range(x):
+        ##        richTextTC.insert(END,"\n nome %s"%filenames[i])
+        #imprimir todos nomes: (fim)
+
+        ##    richTextTC.see(END)
+                
             if (tempfile._exists(nome)):      # no PC/diretorio atual do sw # return True or False
                   richTextTC.insert(END,"\n## Existing File. Choose a Different Name! ##\n")
                   richTextTC.see(END)
@@ -1167,18 +1266,19 @@ def bCriarArquivo():
                 ftp1.quit()
                 nome2 = nomearqSalvar.get()
                 nomearq.set(nome2)
-                lista_arquivos = ListarArquivos_Combo() #Atualizacao da Lista de arquivos.
+                lista_arquivos = ListarArquivos_Combo()
                 box['values'] = lista_arquivos
         ##    if (controle_ftp == 0):
         ##        upload(ftp, nome)
+
 
 def ListarArquivos_Combo():
 
     try:
         ftp = FTP("192.168.0.254")
-        ftp.login("login", "senha")
+        ftp.login("Administrator", "imp0rt@lib")
         ftp.pwd()
-        ftp.cwd("")
+        ftp.cwd("public/Trajectories")
             
         filenames = []
         
@@ -1212,23 +1312,71 @@ def ListarArquivos():
     richTextTC.insert(END,"\n------------------------------------------------------------------------------------" )
 
     ftp = FTP("192.168.0.254")
-    ftp.login("login", "senha")
+    ftp.login("Administrator", "imp0rt@lib")
+##    ftp = FTP("192.168.0.254/public/Trajectories/","Administrator", "Administrator", )
+
+##    ftp.login("Administrator","Admivgfnistrator")
+##    upload(ftp, "oi.txt")
+##    ftp.retrlines('LIST')
     ftp.pwd()
-    ftp.cwd("public/Trajectories")    
+    ftp.cwd("public/Trajectories")
+        
+##    lst = list(im.getdata())
+
+##    lista_arqs = list(ftp.retrlines('LIST')       )
+##    lista_arqs = list(ftp.retrlines('NLST'))
+    
+##    richTextTC.insert(1.0,"\n\INICIO arquivos do diretorio \n\n")
+
+##    richTextArq1.insert(END,"\n Loop = %d" %loop)
+##    richTextTC.insert(1.0,"%s" %((ftp.retrlines('NLST')).readlines))
+##    lst = ftp.dir()
+    
 
     filenames = []
     
     ftp.retrlines('NLST', filenames.append)
     x = len(filenames)
+##    richTextTC.insert(END,"X: %d" %x)
     filenames.sort(key=str.lower)
     for i in range(x):
         
         richTextTC.insert(END,"\n%s"%filenames[i])
 
+
+##    richTextTC.insert(END,"\n nome %s"%filenames)
+
     richTextTC.see(END)
         
+##    if (tempfile._exists(nome)):      # no PC/diretorio atual do sw # return True or False
+
+##          richTextTC.insert(END,"\n## Existing File. Choose a Different Name! ##\n")
+
+##          richTextTC.see(END)
+
+##        
+##    else:
+##        w = open(nome,'w')
+
+##        w.write ("FirstTangent = 0; Degrees\n")
+
+##        w.write ("DiscontinuityAngle = 0.01; Degrees\n")
+
+##        conteudo_arq = richTextArq.get(1.0, END)
+
+##        w.write(conteudo_arq)
+
+##        w.close()
+
+##        upload(ftp, nome)
+
+##        richTextTC.insert(1.0,"\n#File created: %s:\n" %nome)
+
     ftp.quit()
     return filenames
+##    if (controle_ftp == 0):
+
+##        upload(ftp, nome)
 
 def radioUm():
   marcaUnidade = 1
@@ -1240,7 +1388,7 @@ def radioMm():
   marcaUnidade = 1
   global fatorUn
   fatorUn = float(1.0)
-  
+
 
 def radioUmBasic():
   marcaUnidadeBasic = 1
@@ -1252,6 +1400,8 @@ def radioMmBasic():
   global fatorUnBasic
   fatorUnBasic = 1
 
+
+#Y-xis : radioXisY e radioYxis
 def radioXisY():
     global xisY
     xisY = 1
@@ -1259,6 +1409,19 @@ def radioXisY():
 def radioYxis():
     global xisY
     xisY=0 ####(imagem Y -->. X)
+
+##def radioCm():
+##  marcaUnidade = 1
+##  global fatorUn
+##  fatorUn = 10
+
+def cores_fundoPreto():
+    global nova_cor
+    nova_cor = 255 #objeto de cor branca
+    
+def cores_fundoBranco():
+    global nova_cor
+    nova_cor = 0 #objeto de cor preta
 
 def checkTE():
     
@@ -1361,13 +1524,13 @@ def gettext_nova_guia(ftp, filename, outfile=None):
 
 def abrirArqFTP():
     ftp = FTP("192.168.0.254")
-    ftp.login("login", "senha")
+    ftp.login("Administrator", "imp0rt@lib")
     ftp.pwd()
-    ftp.cwd("public/...")
+    ftp.cwd("public/Trajectories")
     ftp1 = FTP("192.168.0.254")
-    ftp.login("login", "senha")
+    ftp1.login("Administrator", "imp0rt@lib")
     ftp1.pwd()
-    ftp1.cwd("public/...")
+    ftp1.cwd("public/traj-sw")
 ##    nomearqSalvar=StringVar() #NOME ARQUIVO  #frame aba4 traj construction
     
 ##    FILE = "arco1poledfgada.txt"
@@ -1585,33 +1748,62 @@ def verificar_statusXY_TE():#usada em todas as setas e 'go shift'
                 richTextBox1.see(END)
                 return int(0) #not ready; not disabled state.
 
-
-def verificar_statusXY_Origin(): #aba origin
+def verificar_statusXY_TE():#usada em todas as setas e 'go shift'
+    
     [Error, GroupStatus] = XY.GroupStatusGet(socketId, group)
     [Error, GroupStatusString] = XY.GroupStatusStringGet (socketId,GroupStatus)
     if ( (GroupStatus >= 10) and (GroupStatus <= 18) ): # de 10 a 18: ready state ..
         x = int(1)
         return x
     else:
-        richTextOrigin.insert(END,"\n--------------------------------------------------------------" )
+        richTextBox1.insert(END,"\n--------------------------------------------------------------" )
         if ( (GroupStatus >= 20) and (GroupStatus <= 38) ): # de 20 a 38: disable state ..
             
-            richTextOrigin.insert(END,"\n# X and Y Positioners status: DISABLE, \n# Click in - 'Enable Positioners'!#\n")
-            richTextOrigin.see(END)
+            richTextBox1.insert(END,"\n# X and Y Positioners status: DISABLE, \n# Click in - 'Enable Positioners' (Tab 'Initialization')!#\n")
+            richTextBox1.see(END)
             return int(2)
 
         else:
             
             if (GroupStatus == 42):
-                richTextOrigin.insert(END,"\n##XY status: %s"% GroupStatusString)
-                richTextOrigin.insert(END,"\n## You must click in - 'Move to Origin'!!#\n")
-                richTextOrigin.see(END)
+                richTextBox1.insert(END,"\n##XY status: %s"% GroupStatusString)
+                richTextBox1.insert(END,"\n## You must click in - 'Move to Origin'(Tab Basic) OR 'Move to Home Positions'(Tab Initialization)!!#\n")
+                richTextBox1.see(END)
                 return int(3)
                 
             else:
-                richTextOrigin.insert(END,"\n##XY status: %s"% GroupStatusString)
-                richTextOrigin.insert(END,"\n## You must click in - 'Positioners Initialization'!#\n")
-                richTextOrigin.see(END)
+                richTextBox1.insert(END,"\n##XY status: %s"% GroupStatusString)
+                richTextBox1.insert(END,"\n## You must click in - 'Positioners Initialization' (Tab 'Initialization')!#\n")
+                richTextBox1.see(END)
+                return int(0) #not ready; not disabled state.
+
+
+def verificar_statusXY_ImgP(): #aba img proc sobel
+    [Error, GroupStatus] = XY.GroupStatusGet(socketId, group)
+    [Error, GroupStatusString] = XY.GroupStatusStringGet (socketId,GroupStatus)
+    if ( (GroupStatus >= 10) and (GroupStatus <= 18) ): # de 10 a 18: ready state ..
+        x = int(1)
+        return x
+    else:
+        richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+        if ( (GroupStatus >= 20) and (GroupStatus <= 38) ): # de 20 a 38: disable state ..
+            
+            richTextImgP.insert(END,"\n# X and Y Positioners status: DISABLE, \n# Click in - 'Enable Positioners'!#\n")
+            richTextImgP.see(END)
+            return int(2)
+
+        else:
+            
+            if (GroupStatus == 42):
+                richTextImgP.insert(END,"\n##XY status: %s"% GroupStatusString)
+                richTextImgP.insert(END,"\n## You must click in - 'Move to Origin'!!#\n")
+                richTextImgP.see(END)
+                return int(3)
+                
+            else:
+                richTextImgP.insert(END,"\n##XY status: %s"% GroupStatusString)
+                richTextImgP.insert(END,"\n## You must click in - 'Positioners Initialization'!#\n")
+                richTextImgP.see(END)
                 return int(0) #not ready; not disabled state.
             
 def buttonInit_novo(): #Inicializacao dos posicionadores ##    (frame_aba2,text='  Positioners \n Initialization', ..
@@ -1914,6 +2106,10 @@ def buttonHomeClickBasic(): #ABA 3 basic Apenas X e Y  #"Move to Origin"
               richTextBasic.see(END)
 
 
+  
+  
+
+
 def verificar_status_todos():
     [Error, GroupStatus] = XY.GroupStatusGet (socketId, group)
     [Error1, GroupStatus1] = SingleAct.GroupStatusGet (socketIdAct, act)
@@ -1937,6 +2133,7 @@ def buttonDisable():
 ##    richTextInit.insert(END,"\n--------------------------------------------------------------" )
 ##    richTextInit.insert(END,"\n# Disable X and Y Positioners\n")
     richTextInit.see(END)
+
 
 
 def buttonEnable():
@@ -2581,13 +2778,6 @@ def bCriarLogFile_basic(): #aba 3 basic
         w.close()
         richTextBasic.insert(END,"\n# LOG File created: %s:\n" %nome)
         richTextBasic.see(END)
-    
-            
-        #enviar dado para ser gravado no arquivo (APPEND)
-##        w.write ("FirstTangent = 0; Degrees\n")
-##        w.write ("DiscontinuityAngle = 0.01; Degrees\n")
-##        w.write(conteudo_arq)
-##        w.close()
 
 
 ###################################################################################################################################
@@ -2614,13 +2804,28 @@ def bCriarLogFile_img(): #aba 6 image execution
         richTextImg.see(END)
         
 def bLerArquivo():
+  cor_ie = nova_cor
+  print "cor ie", cor_ie
   richTextImg.insert(END,"\n--------------------------------------------------------------" )
   nome = nomearqImg.get()
+  print "nova cor: " ,nova_cor
+    
   if (nome == ""):
       richTextImg.insert(END,"\n## You must enter an Image File Name! ##\n")
       richTextImg.see(END)
   else:
         nome = nome +".bmp"
+        try:
+            
+            w = open(nome,'r')
+            
+            richTextImg.insert(END,"\n#File selected: %s:\n" %nome)
+        except:
+            
+            richTextImg.insert(END,"\n# Failed to read file: %s:\n" %nome)
+
+        
+        
 
         relacao_subs_img = (int(1))
 
@@ -2629,7 +2834,7 @@ def bLerArquivo():
         richTextImg.insert(END,im.mode)
         modo = int (im.mode)
         if (modo == 1):
-            richTextImg.insert(END,"\n# - OK! A Monocromatic Image!")
+            richTextImg.insert(END,"\n# - OK! A monochromatic Image!")
         richTextImg.insert(END,"\n# Format: ")
         richTextImg.insert(END,im.format)
         
@@ -2650,8 +2855,6 @@ def bLerArquivo():
         richTextImg.insert(END,"\n Subsx1: %.5f \n" %subsx1)
         richTextImg.insert(END,"\n Subsy1: %.5f \n" %subsy1)
         richTextImg.insert(END,"\n--------------------------------------------------------------\n" )
-
-
 
         lst = list(im.getdata())
         matriz =[]
@@ -2823,8 +3026,8 @@ def LerImagem(): #alterado para teste de Colunag com Break/pausa Funcao acima co
 ##                vetor_mov[c] = somatorioColuna +  528.86
 ##                vetor_mov[b+1] = somatorioColuna
                 dado = int(matriz[j][i])
-                
-                if (dado == 0):
+                cor_ie = nova_cor
+                if (dado == cor_ie):
                     vcol[i] = 1
                     vcolPosX[i] = GUIAx - (i*relacao_subs_img)
                     
@@ -3262,8 +3465,8 @@ def LerImagem2(): #alterado para teste de Colunag com Break/pausa Funcao acima c
 ##                vetor_mov[c] = somatorioColuna +  528.86
 ##                vetor_mov[b+1] = somatorioColuna
                 dado = int(matriz[j][i])
-                
-                if (dado == 0):
+                cor_ie = nova_cor
+                if (dado == cor_ie):
                     if (marcaVazio == 1):
                         
                         richTextImg.insert(END,"\nSomatorioVazio: n (%d)"%i + "= %d" %somatorioVazio)
@@ -3706,50 +3909,33 @@ def bExecImg_menor():
 ####################################################################################################################################
 ####################################################################################################################################
 
-def buttonVerPosicoesOrigin(): # aba Origin
-      status = verificar_statusXY_Origin()
-      if ((status ==1) or (status ==2)):
-            [errorCode, currentPositionx] = XY.GroupPositionCurrentGet(socketId, positionerx, 1)
-            [errorCode, currentPositiony] = XY.GroupPositionCurrentGet(socketId, positionery, 1)
-            [errorCode, currentPositionz] = SingleZ.GroupPositionCurrentGet(socketIdz, positionerz, 1)
-            [errorCode, currentPositionAct] = SingleAct.GroupPositionCurrentGet(socketIdz, positionerAct, 1)
-            rel_guiaX = float(GUIAx - currentPositionx)
-            rel_guiaY = float(GUIAy - currentPositiony)            
-            richTextOrigin.insert(END,"\n# X: %.2f;   " %currentPositionx)
-            richTextOrigin.insert(END," Y: %.2f;   \n" %currentPositiony)
-            richTextOrigin.insert(END,"# Z: %.2f;     " %currentPositionz)
-            richTextOrigin.insert(END," Act: %.2f \n" %currentPositionAct)
-            richTextOrigin.insert(END,"SHIFT GUIDE: (%.4f, "%rel_guiaX+ "%.4f" %rel_guiaY +")\n")
-            
-            if ((rel_guiaX < -0.0001) or (rel_guiaY < -0.0001) or (rel_guiaX > 130.00) or (rel_guiaY > 160.00)):
-                richTextOrigin.insert(END,"\n## Be careful about the draw ~direction/sense~ and the Substrate Size!! ")
-                richTextOrigin.insert(END,"\n## For this Shift Guide Value, the draw is Out \nof  'Alumina Guide'! ##\n")                         
-            richTextOrigin.see(END)
 
-def buttonVerPosicoesOrigin2(): # aba Origin
-      status = verificar_statusXY_Init()
-      if ((status ==1) or (status ==2)):
-            [errorCode, currentPositionx] = XY.GroupPositionCurrentGet(socketId, positionerx, 1)
-            [errorCode, currentPositiony] = XY.GroupPositionCurrentGet(socketId, positionery, 1)
-            [errorCode, currentPositionz] = SingleZ.GroupPositionCurrentGet(socketIdz, positionerz, 1)
-            [errorCode, currentPositionAct] = SingleAct.GroupPositionCurrentGet(socketIdz, positionerAct, 1)
-            rel_guiaX = float(GUIAx - currentPositionx)
-            rel_guiaY = float(GUIAy - currentPositiony)            
-            richTextOrigin.insert(END,"\n# X: %.2f;   " %currentPositionx)
-            richTextOrigin.insert(END," Y: %.2f;   \n" %currentPositiony)
-            richTextOrigin.insert(END,"# Z: %.2f;     " %currentPositionz)
-            richTextOrigin.insert(END," Act: %.2f \n" %currentPositionAct)
-            richTextOrigin.insert(END,"SHIFT GUIDE: (%.4f, "%rel_guiaX+ "%.4f" %rel_guiaY +")\n")
-            
-            if ((rel_guiaX < -0.0001) or (rel_guiaY < -0.0001) or (rel_guiaX > 130.00) or (rel_guiaY > 160.00)):
-                richTextOrigin.insert(END,"\n## Be careful about the draw ~direction/sense~ and the Substrate Size!! ")
-                richTextOrigin.insert(END,"\n## For this Shift Guide Value, the draw is Out \nof  'Alumina Guide'! ##\n")                         
-            richTextOrigin.see(END)
-            return currentPositionx, currentPositiony
 
 
 ##################################################################################################
         #ini funcoes aba img processing sobel skel
+
+def bCriarLogFile_imgP(): #aba 7 image execution
+  nome = nomearqLogImgP.get()
+  richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+  if ((nome == "") or (nome == " ")):
+     richTextImgP.insert(END,"\n## You must enter a LOG File Name! ##\n")
+     richTextImgP.see(END)
+  else:
+    nome = nome+".txt"      
+    
+    if (tempfile._exists(nome)):      
+          richTextImgP.insert(END,"\n## Existing File. Choose a Different Name! ##\n")
+          richTextImgP.see(END)
+        
+    else:
+        w = open(nome,'w')
+        conteudo_arq = richTextImg.get(1.0, END)
+        w.write(conteudo_arq)
+        w.close()
+        richTextImgP.insert(END,"\n# LOG File created: %s:\n" %nome)
+        richTextImgP.see(END)
+        
 
 def bLerArquivo_IMGP(): #ABA7 IMG PROC
   richTextImgP.insert(END,"\n--------------------------------------------------------------" )
@@ -3759,6 +3945,15 @@ def bLerArquivo_IMGP(): #ABA7 IMG PROC
       richTextImgP.see(END)
   else:
         nome = nome +".bmp"
+        try:
+            
+            w = open(nome,'r')
+            
+            richTextImgP.insert(END,"\n#File selected: %s:\n" %nome)
+        except:
+            
+            richTextImgP.insert(END,"\n# Failed to read file: %s:\n" %nome)
+
 
         relacao_subs_img = (int(1))
 
@@ -3767,7 +3962,7 @@ def bLerArquivo_IMGP(): #ABA7 IMG PROC
         richTextImgP.insert(END,im.mode)
         modo = int (im.mode)
         if (modo == 1):
-            richTextImgP.insert(END,"\n# - OK! A Monocromatic Image!")
+            richTextImgP.insert(END,"\n# - OK! A monochromatic Image!")
         richTextImgP.insert(END,"\n# Format: ")
         richTextImgP.insert(END,im.format)
         
@@ -3820,8 +4015,7 @@ def bLerArquivo_IMGP(): #ABA7 IMG PROC
 def bTestePVT():
     LerImagem2PVT()
 
-
-def LerImagem2PVT(): #ABA7 IMG PROC Sobel
+def LerImagem2PVT(): ##copia LerImagemPVT 13-11-14 
     nome = nomearqImgXYZ.get() #arquivo de imagem
     relacao_subs_img = (int(1))               
     richTextImgP.insert(END,"\n--------------------------------------------------------------" )
@@ -3830,6 +4024,20 @@ def LerImagem2PVT(): #ABA7 IMG PROC Sobel
       richTextImgP.see(END)
     else:
         nome = nome+".bmp"
+       
+        try:
+            
+            w = open(nome,'r')
+            
+            richTextImgP.insert(END,"\n#File selected: %s\n" %nome)
+        except:
+            
+            richTextImgP.insert(END,"\n# Failed to read file: %s\n" %nome)
+        richTextImgP.see(END)
+    
+
+
+        
         im = Image.open(nome)
         richTextImgP.insert(END,"\n\n ############ LEITURA DE IMAGEM ############")
         richTextImgP.insert(END,"\nMode: ")
@@ -3843,21 +4051,21 @@ def LerImagem2PVT(): #ABA7 IMG PROC Sobel
         richTextImgP.insert(END,"\nX: %d \n" %x)
         richTextImgP.insert(END,"\nY: %d \n" %y)
         richTextImgP.see(END)
-        substratoX= float(subsX.get())
-        substratoY= float(subsY.get())
-        subsx1= round( (substratoX/x),5)
-        subsy1= round( (substratoY/y),5)
-        richTextImgP.insert(END,"\n Subsx1: %.5f \n" %subsx1)
-        richTextImgP.insert(END,"\n Subsy1: %.5f \n" %subsy1)
-
-        if  (((subsx1)) != ((subsy1 )) ): #relacao tamanho do substrato com relacao ao tamanho da imagem
-                richTextImgP.insert(END,"\n\n# Scale Factor Value in (Substrate Size) must be the same for X and Y! \n ## Using 1.00 FOR TEST#")
-                richTextImgP.see(END)
-                relacao_subs_img = (int(1))
-        else:    
-                relacao_subs_img = float(substratoX/x) #Fator de escala - relacao entre tam substrato a ser manufat e a imagem lida deve ser = entre X e Y.
-                richTextImgP.insert(END,"\n Relacao Substrate/Imagem: %.5f \n" %relacao_subs_img)
-                richTextImgP.see(END)
+##        substratoX= float(subsX.get())
+##        substratoY= float(subsY.get())
+##        subsx1= round( (substratoX/x),5)
+##        subsy1= round( (substratoY/y),5)
+##        richTextImgP.insert(END,"\n Subsx1: %.5f \n" %subsx1)
+##        richTextImgP.insert(END,"\n Subsy1: %.5f \n" %subsy1)
+##
+##        if  (((subsx1)) != ((subsy1 )) ): #relacao tamanho do substrato com relacao ao tamanho da imagem
+##                richTextImgP.insert(END,"\n\n# Scale Factor Value in (Substrate Size) must be the same for X and Y! \n ## Using 1.00 FOR TEST#")
+##                richTextImgP.see(END)
+##                relacao_subs_img = (int(1))
+##        else:    
+##                relacao_subs_img = float(substratoX/x) #Fator de escala - relacao entre tam substrato a ser manufat e a imagem lida deve ser = entre X e Y.
+##                richTextImgP.insert(END,"\n Relacao Substrate/Imagem: %.5f \n" %relacao_subs_img)
+##                richTextImgP.see(END)
         
         lst2 = []
         lst = list(im.getdata())
@@ -3930,7 +4138,7 @@ def LerImagem2PVT(): #ABA7 IMG PROC Sobel
                 dado = int(matriz[j][i])
 ##                if (dado == 0): #desenho cor preta
                 if (dado == cor):
-                    matriz[j][i] = 3 # 3 o valor da 1a posicao, outras recebem 2 :*
+                    matriz[j][i] = 3 # 3 o valor da 1a posicao, outras recebem 2!!
                     if (primeiraPos == 0):                        
                         PrimeiraPosX = i
                         PrimeiraPosY = j
@@ -4015,7 +4223,7 @@ def LerImagem2PVT(): #ABA7 IMG PROC Sobel
                             novoj = j-1
                             novoi = i
                             marcaR=4
-##                            richTextImg.insert(END,"\n \n... Soma DIAG sup: %d" %somaDiag_sup)                            
+##                            richTextImgP.insert(END,"\n \n... Soma DIAG sup: %d" %somaDiag_sup)                            
 ##                        else:                            
 ##                            L_sup  = 0
 ##                            somaL_sup = 0
@@ -4086,6 +4294,7 @@ def LerImagem2PVT(): #ABA7 IMG PROC Sobel
 ##                            verifica_proximo_pvt(novoi,novoj,-1,0)
                             primeiroMarcaR = marcaR
                             verifica_proximo(novoi,novoj,-1,x,y,matriz)                          
+                        
 
 def verifica_proximo(i,j,marcaRant,x,y,matriz): #copiado de verifica_proximo_pvt para testes de verificacao multipla de ramificacao
     testex = []
@@ -4116,11 +4325,39 @@ def verifica_proximo(i,j,marcaRant,x,y,matriz): #copiado de verifica_proximo_pvt
     vx_col.append(i) 
     vy_l.append(j)
     
-
+##    a = len(vx_col)
+##    print ("a: ", a)
+####    print ("vx: ", vx_col)    
+##    x = int(2)
+##    
+##    xx = int(1)
+##if (xx == 1):
     cont = 1
     c = 1
     
    
+##    while (nova_modificacao == 1):
+    
+##        print ("cont", cont)
+##        cont = cont + 1
+##    for a in range(x): #(x) Colunas (3,4) (ok5.bmp)        
+##        for b in range(y): # (y) posicao das Linhas (4,5)
+##            dado = int(matriz[b][a])
+##            print ("cont", cont)
+##            cont = cont + 1
+##            if (dado == 0):
+##                testex.append(a)
+##                testey.append(b)
+##    print testex
+##    print testey
+##    tam = len(testex)
+##    print tam
+##    for i in range(novoi, x): #(x)     
+##        for j in range(novoj, y): # (y)
+    
+##    for  l in range (tam):
+##        print ("i: ", i)
+##        print ("j: ", j)
     while (nova_modificacao == 1):
         if  (matriz[j+1][i] == cor): #0
             print("aqui dentro ==0 linf")
@@ -4318,23 +4555,28 @@ def verifica_proximo(i,j,marcaRant,x,y,matriz): #copiado de verifica_proximo_pvt
                 nova_modificacao = 0
                 del matriz
                 print ("Ok")            
-                print ("aqui ql valores novos:)")
                 print ("**** vramif: ", v_ramif)
 ##                arquivo_XYZ()
-                arquivo_LineArc()
+                arquivo_LineArc(x,y)
 
-def arquivo_LineArc(): #alteracoes 02-03-15 inc subversion
+
+def arquivo_LineArc(tamX,tamY): #alteracoes 02-03-15 inc subversion
+    
+#comentar as 4 linhas a seguir para conexao TCP
+
     ftp = FTP("192.168.0.254")
     ftp.login("login", "senha")
     ftp.pwd()
-    ftp.cwd("public/...")
+    ftp.cwd("public/Trajectories")
     
-##    nome = "teste_arq_pvt"
+#fim comentario
+    
     nome = nomearqSalvarImgXYZ.get()
     nome = nome+'.txt'
     print ("nome arquivo: ",nome) 
     escala= float(escalaImg.get())
-    richTextImgP.insert(END,"\n Subsx1: %.5f \n" %escala)
+    escala = escala/100
+    
     rearanjar_vetor()
     print ("*************************************************************************************************")
 
@@ -4385,13 +4627,235 @@ def arquivo_LineArc(): #alteracoes 02-03-15 inc subversion
 ##         w.write ("FirstTangent = 0; Degrees\n")
         w.write("\n")
     w.close()
+#comentar upload
     upload(ftp, nome)
-    richTextImgP.insert(1.0,"\n#File created: %s:\n" %nome)
+    richTextImgP.insert(END,"\n\n####################################")
+    richTextImgP.insert(END,"\n#File created: %s:\n" %nome)
+    richTextImgP.insert(END,"\n ## X: %d; " %tamX + "Y: %d" %tamY)
+    richTextImgP.insert(END,"\n ##Relacao Substrate/Imagem:")
+    richTextImgP.insert(END,"\n ## (Scale): %.2f" %(escala*100)+"%")
+    offsetX = PrimeiraPosX*escala
+    offsetY = (tamY-PrimeiraPosY)*escala
+    richTextImgP.insert(END,"\n ## OffSet Guide X: %.3f " %offsetX)
+    richTextImgP.insert(END,"\n ## OffSet Guide Y: %.3f \n" %offsetY)
+    richTextImgP.see(END)
+#comentar ftp.quit
     ftp.quit()
     nome2 = nomearqSalvarImgXYZ.get()
     nomearq.set(nome2)
     limpar_vetores()
+
+
+def rearanjar_vetor(): 
     
+    print("#############################################################################################################")
+    print("#############################################################################################################")
+    antx = PrimeiraPosX
+    anty = PrimeiraPosY
+    marcaR = primeiroMarcaR
+    v_ramif_somasX = [0]*8
+    v_ramif_somasY = [0]*8
+    global vx_col_novo
+    global vy_l_novo 
+    vx_col_novo = []
+    vy_l_novo = []
+##    x = ((float(antx))*escala)
+##    y = ((float(anty))*escala)
+    x = float(antx)
+    y = float(anty)
+    somax = int(0)
+    somay = int(0)
+    sentidox = int(1)
+    sentidoy = int(1)
+    cont = 0
+    print ("marcaR: " ,marcaR)
+    mudou_estado = 0
+    for i in range(len(vx_col)):
+        lin  = vy_l[i]
+        col =  vx_col[i]
+        print ("ant X: " ,antx)
+        print ("ant Y: " ,anty)
+        print ("COL: " , vx_col[i])           
+        print ("lin: " ,vy_l[i])
+        
+#         posx = x - ((float(col))*escala)
+##        posy = y - ((float(lin))*escala)
+        posx = x - float(col)
+        posy = y - float(lin)
+        print ("-----")
+        print (" X: " ,posx)
+        print (" Y: " ,posy)
+
+        print vx_col_novo
+        print vy_l_novo
+        if (antx == col): #0ou4
+            if (lin > anty): #0
+                if (marcaR != 0):
+                    mudou_estado = 1
+                    print ("aqui")
+                    
+                    vx_col_novo.append(v_ramif_somasX[marcaR])
+                    vy_l_novo.append(v_ramif_somasY[marcaR])
+                    somax= int(0)
+                    somay=int(0)
+                else:
+                    mudou_estado = 0
+                marcaR = 0
+                print ("antx == col & lin > anty")
+                sentidoy = int(1)
+                sentidox = int(1)
+                somay = somay+1    
+                
+            else: #4
+                if (marcaR != 4):
+                    mudou_estado = 1
+                    vx_col_novo.append(v_ramif_somasX[marcaR])
+                    vy_l_novo.append(v_ramif_somasY[marcaR])
+                    somax= int(0)
+                    somay=int(0)
+                else:
+                    mudou_estado = 0
+                marcaR = 4
+                print ('4')
+                somay = somay + 1
+                sentidoy = int(-1)
+                sentidox = int(1)
+            somax = 0
+            print("somax: antx = col ", somax)
+            print("somay: ", somay)
+            v_ramif_somasX[marcaR] = somax*sentidox
+            v_ramif_somasY[marcaR] = somay*sentidoy
+            
+            
+    
+        else:
+            if (anty == lin):#2ou6
+                print ('else:  anty == lin:::')       
+                if (col > antx): #2
+                    if (marcaR != 2):
+                        mudou_estado = 1
+                        vx_col_novo.append(v_ramif_somasX[marcaR])
+                        vy_l_novo.append(v_ramif_somasY[marcaR])
+                        somax= int(0)
+                        somay=int(0)
+                    else:
+                        mudou_estado = 0    
+                    
+                    marcaR = 2
+                    print ('col > antx')
+                    sentidox = int(-1)
+                    sentidoy = int(1)
+                    somax = somax + 1
+                    
+##                    t = (x-posx)/v
+                else: #6
+                    if (marcaR != 6):
+                        mudou_estado = 1
+                        vx_col_novo.append(v_ramif_somasX[marcaR])
+                        vy_l_novo.append(v_ramif_somasY[marcaR])
+                        somax= int(0)
+                        somay=int(0)
+                    else:
+                        mudou_estado = 0   
+                    print ('6')
+                    marcaR = 6
+                    somax = somax+1
+                    sentidox = int(1)
+                    sentidoy=int(1)
+                somay = 0
+                print("somax: anty = lin ", somax)
+                print("somay: ", somay)
+                v_ramif_somasX[marcaR] = somax*sentidox
+                v_ramif_somasY[marcaR] = somay*sentidoy
+                
+            else: #diagonal
+                print ('diagonal')       
+                if (col > antx): #1ou3
+##                    soma = soma+1
+                    print ('col > antx')
+                    if (lin > anty): #1
+                        if (marcaR != 1):
+                            mudou_estado = 1
+                            vx_col_novo.append(v_ramif_somasX[marcaR])
+                            vy_l_novo.append(v_ramif_somasY[marcaR])
+                            somax= int(0)
+                            somay=int(0)
+                        else:
+                            mudou_estado = 0
+##                        somax = somax+1
+##                        somay = somay+1
+                        marcaR = 1
+                        sentidox = int(-1)
+                        sentidoy = int(1)
+                        print ('lin > anty')
+                        
+                    else: #3
+                        print ('3')
+                        if (marcaR != 3):
+                            mudou_estado = 1
+                            vx_col_novo.append(v_ramif_somasX[marcaR])
+                            vy_l_novo.append(v_ramif_somasY[marcaR])
+                            somax= int(0)
+                            somay=int(0)
+                        else:
+                            mudou_estado = 0
+                        marcaR = 3
+                        sentidox = int(-1)
+                        sentidoy = int(-1) 
+##                        somax = somax+1
+##                        somay = somay+1
+                        
+                else: #5ou7
+                    if  (lin < anty) :#5
+                        if (marcaR != 5):
+                            mudou_estado = 1
+                            vx_col_novo.append(v_ramif_somasX[marcaR])
+                            vy_l_novo.append(v_ramif_somasY[marcaR])
+                            somax= int(0)
+                            somay=int(0)
+                        else:
+                            mudou_estado = 0
+                        marcaR = 5                      
+                        print ('anty < lin 5')
+                        sentidox = int(1)
+                        sentidoy = int(-1)
+                        
+                        
+                    else: #7
+                        print ('7')
+                        if (marcaR != 7):
+                            mudou_estado = 1
+                            vx_col_novo.append(v_ramif_somasX[marcaR])
+                            vy_l_novo.append(v_ramif_somasY[marcaR])
+                            somax= int(0)
+                            somay=int(0)
+                        else:
+                            mudou_estado = 0
+                        marcaR = 7
+                        sentidox = int(1)
+                        sentidoy = int(1)
+                somax = somax+1
+                somay = somay+1
+                print("somax: diag ", somax)
+                print("somay: diag ", somay)
+                v_ramif_somasX[marcaR] = somax*sentidox
+                v_ramif_somasY[marcaR] = somay*sentidoy
+            
+        
+        antx = col
+        anty = lin
+    #para salvar ultima posicao vertor novo
+    vx_col_novo.append(v_ramif_somasX[marcaR])
+    vy_l_novo.append(v_ramif_somasY[marcaR])
+    #Para considerar a 1a posicao: ajuste considerando a 1a pos.: p ex PRIMEIRA POS 3,4 prox Linf 3,5 , v_novo 0,-4 ; o correto eh 0,-5 :
+    vy_l_novo[0] =  vy_l_novo[0] - (PrimeiraPosY - vy_l[0] )
+    vx_col_novo[0] = vx_col_novo[0] - (PrimeiraPosX - vx_col[0] )
+    for i in range(len(vx_col)):
+        richTextImgP.insert(END,"\n[%d]"%i +" = %d"%vx_col[i] + " & %d; ;  " %vy_l[i])
+        
+    for i in range(len(vx_col_novo)):
+        richTextImgP.insert(END,"\n[%d]"%i +" = %d"%vx_col_novo[i] + " & %d; ;  " %vy_l_novo[i])
+        
 def limpar_vetores():
     del vy_l_novo[:]
     del vx_col_novo[:]
@@ -4405,8 +4869,9 @@ def buttonTipsImgContorno():
     richTextImgP.insert(END,"\n## TIPS to Image Processing: \n\
 - Do not use Extension for File Names\
 \n- Read Image File: To .BMP files\
-\n- Label Image Regions: Segmentation-use .PNG file\
-\n- See SubImage: \n\
+\n- Label Image Regions (Segmentation): Use .PNG file\
+\n- (GIMP Program - menu Image - MODE-> indexed)\
+\n- SubImage Preview: \n\
   You can use this button only after using \n  'Label Image Regions'\
   - Choose a number to See the segmentation part in Image File \n\
 - Sobel Edge map: Image edge detection Filter.\n\
@@ -4427,9 +4892,22 @@ def bSegmentarImg():
     else:
         
         nome = nome1+'.png'
+        try:
+            
+            w = open(nome,'r')
+            
+            richTextImgP.insert(END,"\n#File selected: %s:\n" %nome)
+        except:
+            
+            richTextImgP.insert(END,"\n# Failed to read file: %s:\n" %nome)
+        richTextImgP.see(END)
         
         im = misc.imread(nome)
+        print "im: ", im
+        print label
+        print type(label)
         label_image = label(im)
+        
         
 
         sub_imag = []
@@ -4501,6 +4979,14 @@ def bSobelSkelImg():
 ##     novo_nome_seg = nome1+'_seg'+c+'.png'
     
     print "seg sobl", seg
+    try:
+        print 'Sobel_Skel'
+        w = open(nome,'r')
+        
+        richTextImgP.insert(END,"\n#File selected: %s:\n" %nome)
+    except:
+    
+        richTextImgP.insert(END,"\n# Failed to read file: %s:\n" %nome)
     
     if seg ==0:#marcador segmentacao - numero d arquivos
         total_sub_imgs = 1
@@ -4510,66 +4996,206 @@ def bSobelSkelImg():
             richTextImgP.see(END)
         else:            
             nome = nome1+'.png'
+                    
+            novo_nome_seg = nome
+            print novo_nome_seg
+            richTextImgP.insert (END,"\n(%s) " %novo_nome_seg)
+            richTextImgP.see(END)
+    ##        i_str = str(i)
+    ##        img = "ola"+i_str+".png"
+    ##        print img
+            img = novo_nome_seg
+    ##    ##    
+            im = Image.open(img)
+    ##        
+            print im.size
+        
+            t_im = im.size
+            x_im = t_im[0]
+            y_im = t_im[1]
+    ##
+            n_im = Image.new ("L", (x_im+10,y_im+10))
+            n_im.paste(im,(5,5))
+
+            nome_nova = "nova_"+nome
+            n_im.save(nome_nova)
+    ##        
+            novaim = scipy.misc.imread(nome_nova)
+            novaim = novaim.astype('int32')
+    ####
+    ####
+            nome_sobel = nome1+'_sobel'
+    ####        
+            print ("Sobel ...")
+            dx = ndimage.sobel(novaim, 0)  # horizontal derivative
+            dy = ndimage.sobel(novaim, 1)  # vertical derivative
+            mag = np.hypot(dx, dy)  # magnitude
+            mag *= 255.0 / np.max(mag)  # normalize (Q&D)
+            scipy.misc.imsave(nome_sobel+'.png', mag)
+            print ("Skel ...  ")
+    ##        
+            im = scipy.misc.imread(nome_sobel+'.png')
+            im[im > 1] = 1
+            imagem_pp = np.asarray(im)
+            skel = morphology.skeletonize(imagem_pp)
+            scipy.misc.imsave(nome_sobel+'_skel.bmp', skel)
+            richTextImgP.insert(END,"\n#New file: %s" %nome_sobel+'_skel.bmp')
+            richTextImgP.see(END)
+            
+    ##        scipy.misc.imsave(nome_sobel+"_skel"+i_str+".bmp", skel)
+    ##        print ("-------")
+
     else:
         total_sub_imgs = tam_sub_img
         print "tam_sub_img", tam_sub_img
         print "just ONE file .. "
-    for i in range(0,total_sub_imgs):
-        print "imagem ", i
-        c = str(i+1)
-        novo_nome_seg = nome1+'_seg'+c
-        print novo_nome_seg
-        richTextImgP.insert (END,"\n(%s) "%c + novo_nome_seg+'.png')
-        richTextImgP.see(END)
-##        i_str = str(i)
-##        img = "ola"+i_str+".png"
-##        print img
-        img = novo_nome_seg+'.png'
-##    ##    
-        im = Image.open(img)
-##        
-        print im.size
-##        
-        t_im = im.size
-        x_im = t_im[0]
-        y_im = t_im[1]
-##
-        n_im = Image.new ("L", (x_im+10,y_im+10))
-        n_im.paste(im,(5,5))
+        for i in range(0,total_sub_imgs):
+            print "imagem ", i
+            c = str(i+1)
+            novo_nome_seg = nome1+'_seg'+c
+            print novo_nome_seg
+            richTextImgP.insert (END,"\n(%s) "%c + novo_nome_seg+'.png')
+            richTextImgP.see(END)
+    ##        i_str = str(i)
+    ##        img = "ola"+i_str+".png"
+    ##        print img
+            img = novo_nome_seg+'.png'
+    ##    ##    
+            im = Image.open(img)
+    ##        
+            print im.size
 
-        nome_nova = "nova_"+novo_nome_seg+'.png'
-        n_im.save(nome_nova)
-##        
-        novaim = scipy.misc.imread(nome_nova)
-        novaim = novaim.astype('int32')
-####
-####
-        nome_sobel = novo_nome_seg+'_sobel'
-####        
-        print ("Sobel ...")
-        dx = ndimage.sobel(novaim, 0)  # horizontal derivative
-        dy = ndimage.sobel(novaim, 1)  # vertical derivative
-        mag = np.hypot(dx, dy)  # magnitude
-        mag *= 255.0 / np.max(mag)  # normalize (Q&D)
-        scipy.misc.imsave(nome_sobel+'.png', mag)
-        print ("Skel ...  ")
-##        
-        im = scipy.misc.imread(nome_sobel+'.png')
-        im[im > 1] = 1
-        imagem_pp = np.asarray(im)
-        skel = morphology.skeletonize(imagem_pp)
-        scipy.misc.imsave(nome_sobel+'_skel.bmp', skel)
-        
-##        scipy.misc.imsave(nome_sobel+"_skel"+i_str+".bmp", skel)
-##        print ("-------")
+    ##        
+            t_im = im.size
+            x_im = t_im[0]
+            y_im = t_im[1]
+    ##
+            n_im = Image.new ("L", (x_im+10,y_im+10))
+            n_im.paste(im,(5,5))
+
+            nome_nova = "nova_"+novo_nome_seg+'.png'
+            n_im.save(nome_nova)
+    ##        
+            novaim = scipy.misc.imread(nome_nova)
+            novaim = novaim.astype('int32')
+    ####
+    ####
+            nome_sobel = novo_nome_seg+'_sobel'
+    ####        
+            print ("Sobel ...")
+            dx = ndimage.sobel(novaim, 0)  # horizontal derivative
+            dy = ndimage.sobel(novaim, 1)  # vertical derivative
+            mag = np.hypot(dx, dy)  # magnitude
+            mag *= 255.0 / np.max(mag)  # normalize (Q&D)
+            scipy.misc.imsave(nome_sobel+'.png', mag)
+            print ("Skel ...  ")
+    ##        
+            im = scipy.misc.imread(nome_sobel+'.png')
+            im[im > 1] = 1
+            imagem_pp = np.asarray(im)
+            skel = morphology.skeletonize(imagem_pp)
+            scipy.misc.imsave(nome_sobel+'_skel.bmp', skel)
+            richTextImgP.insert(END,"\n#New file: %s" %nome_sobel+'_skel.bmp')
+            richTextImgP.see(END)
+                                
+            
+    ##        scipy.misc.imsave(nome_sobel+"_skel"+i_str+".bmp", skel)
+    ##        print ("-------")
+
     
-def bExecImgProc():
-    pass
+def bExecImgProc(): #execucao arquivo de trajetoria LineArc
+      nome = nomearqSalvarImgXYZ.get()
+      v = velImg.get()
+      
+      n_rep = repImg.get()
+  
+      if (nome == "") or (nome == " "):
+          richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+          richTextImgP.insert(END,"\n## You must enter a Traj.File Name! ##\n")
+          richTextImgP.see(END)
+      else:
+        if ( (v == " ") or (n_rep == " ") or (v == "") or (n_rep == "")):
+          richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+          richTextImgP.insert(END,"\n## You must enter Velocity(float) AND N.rep (integer) ##\n")
+          richTextImgP.see(END)
+        else:
+            nome = nome+".txt"            
+            aceleracao = 20
+            a= float(aceleracao)
+            v = float(v)
+            n_rep = int(n_rep)
+            status = verificar_statusXY_ImgP()
+            if (status ==1):
+
+                    ftp = FTP("192.168.0.254")
+                    ftp.login("Administrator", "imp0rt@lib")
+                    ftp.pwd()
+                    ftp.cwd("public/Trajectories")
+                                  
+                    try:
+                        gettext1(ftp, nome)
+                        richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+                        richTextImgP.insert(END,"\n # Ok. Start ... Line-Arc Traj file execution: %s\n" %nome)
+                        richTextImgP.insert(END," # v.: %.2f mm/s" %v + "; No.rep.: %d \n" %n_rep )
+                        richTextImgP.see(END)
+                        [errorCode, returnString] = XY.XYLineArcExecution (socketId, group, nome, v, a, n_rep)
+    
+                    except ftplib.error_perm:
+                        richTextImgP.insert(END,"\n--------------------------------------------------------------" )
+
+                        richTextImgP.insert(END,"\n##Error: FILE not Found: %s"% nome)
+                        richTextImgP.see(END)
+                        os.unlink(nome)
+                    ftp.quit()
+
 
 
         #fim aba7 img proc sobel skel
 ##################################################################################################
-        
+
+
+
+def buttonVerPosicoesOrigin(): # aba Origin
+      status = verificar_statusXY_Origin()
+      if ((status ==1) or (status ==2)):
+            [errorCode, currentPositionx] = XY.GroupPositionCurrentGet(socketId, positionerx, 1)
+            [errorCode, currentPositiony] = XY.GroupPositionCurrentGet(socketId, positionery, 1)
+            [errorCode, currentPositionz] = SingleZ.GroupPositionCurrentGet(socketIdz, positionerz, 1)
+            [errorCode, currentPositionAct] = SingleAct.GroupPositionCurrentGet(socketIdz, positionerAct, 1)
+            rel_guiaX = float(GUIAx - currentPositionx)
+            rel_guiaY = float(GUIAy - currentPositiony)            
+            richTextOrigin.insert(END,"\n# X: %.2f;   " %currentPositionx)
+            richTextOrigin.insert(END," Y: %.2f;   \n" %currentPositiony)
+            richTextOrigin.insert(END,"# Z: %.2f;     " %currentPositionz)
+            richTextOrigin.insert(END," Act: %.2f \n" %currentPositionAct)
+            richTextOrigin.insert(END,"SHIFT GUIDE: (%.4f, "%rel_guiaX+ "%.4f" %rel_guiaY +")\n")
+            
+            if ((rel_guiaX < -0.0001) or (rel_guiaY < -0.0001) or (rel_guiaX > 130.00) or (rel_guiaY > 160.00)):
+                richTextOrigin.insert(END,"\n## Be careful about the draw ~direction/sense~ and the Substrate Size!! ")
+                richTextOrigin.insert(END,"\n## For this Shift Guide Value, the draw is Out \nof  'Alumina Guide'! ##\n")                         
+            richTextOrigin.see(END)
+
+def buttonVerPosicoesOrigin2(): # aba Origin
+      status = verificar_statusXY_Init()
+      if ((status ==1) or (status ==2)):
+            [errorCode, currentPositionx] = XY.GroupPositionCurrentGet(socketId, positionerx, 1)
+            [errorCode, currentPositiony] = XY.GroupPositionCurrentGet(socketId, positionery, 1)
+            [errorCode, currentPositionz] = SingleZ.GroupPositionCurrentGet(socketIdz, positionerz, 1)
+            [errorCode, currentPositionAct] = SingleAct.GroupPositionCurrentGet(socketIdz, positionerAct, 1)
+            rel_guiaX = float(GUIAx - currentPositionx)
+            rel_guiaY = float(GUIAy - currentPositiony)            
+            richTextOrigin.insert(END,"\n# X: %.2f;   " %currentPositionx)
+            richTextOrigin.insert(END," Y: %.2f;   \n" %currentPositiony)
+            richTextOrigin.insert(END,"# Z: %.2f;     " %currentPositionz)
+            richTextOrigin.insert(END," Act: %.2f \n" %currentPositionAct)
+            richTextOrigin.insert(END,"SHIFT GUIDE: (%.4f, "%rel_guiaX+ "%.4f" %rel_guiaY +")\n")
+            
+            if ((rel_guiaX < -0.0001) or (rel_guiaY < -0.0001) or (rel_guiaX > 130.00) or (rel_guiaY > 160.00)):
+                richTextOrigin.insert(END,"\n## Be careful about the draw ~direction/sense~ and the Substrate Size!! ")
+                richTextOrigin.insert(END,"\n## For this Shift Guide Value, the draw is Out \nof  'Alumina Guide'! ##\n")                         
+            richTextOrigin.see(END)
+            return currentPositionx, currentPositiony
+
 def bCriaArquivoOrigin(x,y):
 ##  #x,y: posicoes atuais absolutas da guia
     richTextOrigin.insert(END,"\n-----------------------------------------------------------------" )
@@ -4591,7 +5217,7 @@ def bCriaArquivoOrigin(x,y):
     
     ftp = FTP("192.168.0.254")
     
-    ftp.login("login", "senha")
+    ftp.login("Administrator", "imp0rt@lib")
     
     ftp.pwd()
     ftp.cwd("public/guia")
@@ -4677,7 +5303,31 @@ def bCriaArquivoOrigin(x,y):
         ftp.close()
         richTextOrigin.see(END)
         buttonShowInfoOrigin()
-    
+        
+
+
+##class FTPConnection(object):
+##    def __init__(self, server, username, password):
+##        self.server = server
+##        self.username = username
+##        self.password = password
+##    def __enter__(self):
+##        self.ftp = FTP(self.server)
+##        self.ftp.login(self.username,self.password)
+##        return self
+##    def __exit__(self, type, value, traceback):
+##        self.ftp.quit()
+##    def writeserverfile(self, serverpath, filename, path):        
+##        self.ftp.cwd(serverpath)
+##        self.ftp.storlines('STOR '+filename, open(path,'r'))
+##
+##
+##while True:
+##
+##    with FTPConnection(server,username,password) as ftp:
+##        ftp.writeserverfile(self, serverpath, filename, path)
+
+
 def askopenfilename_teste():
 
     global filterdata, lowwave, highwave
@@ -4702,10 +5352,32 @@ def handler1(event):
         nomearqSalvar.set(box.get())
         
         
+##        print ("ola")
+##        for label in labels.values():
+##            label.config(relief='flat')
+##        value = values[current]
+##        label = labels[value]
+##        label.config(relief='raised')
+
+
+
 # define the callback
 ##var = StringVar()  # create a var object
 def tracer(name, idontknow, mode):
+    
+    # I cannot find the arguments sent to the callback documented
+    # anywhere, or how to really use them.  I simply ignore
+    # the arguments, and use the invocation of the callback
+    # as the only api to tracing
     print arq_combo.get()
+
+##var.trace('w', tracer)
+# 'w' in this case, is the 'mode', one of 'r'
+# for reading and 'w' for writing
+
+##var.set('Foo')  # manually update the var...
+
+# 'Foo' is printed
 
 
 def buttonDefineGuiaNova():
@@ -4743,9 +5415,9 @@ def buttonResetGuiaNova():
     
     ftp = FTP("192.168.0.254")
     
-    ftp.login("login", "senha")
+    ftp.login("Administrator", "imp0rt@lib")
     ftp.pwd()
-    ftp.cwd("public/...")
+    ftp.cwd("public/guia")
     
 ## x = '%.*f'%(2,x)
     
@@ -4851,9 +5523,9 @@ def buttonVerLogFile():
     nome_log = "log_definicao_guia.txt"
     now = datetime.now()    
     ftp = FTP("192.168.0.254")
-    ftp.login("login", "senha")
+    ftp.login("Administrator", "imp0rt@lib")
     ftp.pwd()
-    ftp.cwd("public/...") 
+    ftp.cwd("public/guia") 
     try:
         richTextOrigin.insert(END,"\n## LOG FILE - GUIDE SETTINGS ##\n" )
         log = gettext_nova_guia(ftp, nome_log)
@@ -4882,9 +5554,9 @@ def verificar_posicoes_Guia():
     try:
         ftp = FTP("192.168.0.254")
     
-        ftp.login("login", "senha")
+        ftp.login("Administrator", "imp0rt@lib")
         ftp.pwd()
-        ftp.cwd("public/...")
+        ftp.cwd("public/guia")
         atual = gettext_nova_guia(ftp, nome_atual)
         print "atual ", atual
         atual_x = str(atual[1] +"\n")
@@ -4931,6 +5603,8 @@ def buttonTipsOrigin():
 global fatorColuna
 fatorColuna = -1
 
+global seg
+seg = 0
 global marca1radio
 marca1radio = -1
 global marcaUnidade
@@ -4947,6 +5621,13 @@ xisY = 1
 
 ##global GUIAx ################ incluir VALORes DO guia NO """ buttonHomeClick""" 
 ##global GUIAy
+
+global GUIAx ################ incluir VALORes DO guia NO """ buttonHomeClick""" 
+global GUIAy
+GUIAx = float(0.00)
+GUIAy = float(0.00)
+global cor #guia ip
+cor = int(255) #branco
 
 ##GUIAx = 13.00
 ##GUIAy = 44.00
@@ -5002,10 +5683,9 @@ try:
     socketIdXYZ = XYZ.TCP_ConnectToServer('192.168.0.254', 5001, 20)
 
     socketIdz = SingleZ.TCP_ConnectToServer('192.168.0.254', 5001, 20)
-    socketIdz2 = SingleZ.TCP_ConnectToServer('192.168.0.254', 5001, 20)
 
     socketIdAct = SingleAct.TCP_ConnectToServer('192.168.0.254', 5001, 20)
-    socketIdAct2 = SingleAct.TCP_ConnectToServer('192.168.0.254', 5001, 20)
+
     ####
     ##### Check connection passed
     print ('Check conection, wait')
@@ -5085,20 +5765,20 @@ label1.pack(padx=130, pady=130)
 image = Image.open("logo.png") #Logotipo CTI
 photo = ImageTk.PhotoImage(image)
 
-label = Label(frame_aba1,image=photo)
-label.image = photo 
-label.place(relx=0.00, rely=-0.030, relwidth=0.35, relheight=0.30)
+label_logo = Label(frame_aba1,image=photo)
+label_logo.image = photo 
+label_logo.place(relx=0.00, rely=-0.030, relwidth=0.35, relheight=0.30)
 
 ########################################### ###########################################
 #ini ########################################### ABA 2 Init
 labelTraj=Label(frame_aba2, font="{Arial black} 9",text='System Initialization')#acima do richTextArq !!
 labelTraj.grid(column=0 ,row = 0)
-
-buttonHome=Button(frame_aba2,text='  Positioners \n Initialization', command=buttonInit_novo,style = "TButton")
+ 
+buttonHome=Button(frame_aba2,text='   Initialize \n Positioners', command=buttonInit_novo,style = "TButton")
 buttonHome.place(relx=0.03, rely=0.12, relwidth=0.15, relheight=0.11)
 
 
-buttonHome1=Button(frame_aba2,text='Move to HOME \n      Positions ', command=buttonHomeClick2_novo,style = "TButton")
+buttonHome1=Button(frame_aba2,text='Move to HOME \n    Positions ', command=buttonHomeClick2_novo,style = "TButton")
 buttonHome1.place(relx=0.20, rely=0.12, relwidth=0.16, relheight=0.11)
 
 buttonDisable=Button(frame_aba2,text='     DISABLE \n   Positioners   ', command=buttonDisable,style = "TButton")
@@ -5189,7 +5869,7 @@ labelVelRelative.place(relx=0.013, rely=0.15, relwidth=0.07, relheight=0.05)
 velRelativeBasic=StringVar() #
 textVelRelativeBasic=Entry(frame_aba3,font = '{Arial} 9',textvariable = velRelativeBasic) #inserir botoes direcionais desta aba
 textVelRelativeBasic.place(relx=0.1, rely=0.15, relwidth=0.06, relheight=0.05)
-velRelativeBasic.set("30")
+velRelativeBasic.set("2")
 
 #mm aba3 basic
 radioMm1=Radiobutton(frame_aba3,text='mm', command=radioMmBasic, value = 0)
@@ -5208,7 +5888,7 @@ bXneg1.place(relx=0.1, rely=0.24, relwidth=0.04, relheight=0.06)
 textMovRelBasic=StringVar() #text velocidade p/ mov relativo aba 3 basic
 textCoordB=Entry(frame_aba3,font = '{Arial} 9',foreground="#5C4033" , textvariable=textMovRelBasic)
 textCoordB.place(relx=0.14, rely=0.245, relwidth=0.07, relheight=0.05)
-textMovRelBasic.set ("")
+textMovRelBasic.set ("25")
 
 bXpos1 = Button(frame_aba3,text='→', command=XposBasic,style = "TButton")
 bXpos1.place(relx=0.21, rely=0.24, relwidth=0.04, relheight=0.06)
@@ -5222,7 +5902,8 @@ buttonHome2.place(relx=0.362, rely=0.22, relwidth=0.16, relheight=0.11)
 
 
 # ---- ini shift guide aba 3 basic ----------------------------------------
-labelShift=Label(frame_aba3,text='Shift Guide Absolute Movement [mm]:')# -- SHIFT GUIDE !!! aba 3 BASIC 
+labelShift=Label(frame_aba3,text='Offset from Origin of Positioning Guide [mm]')
+##                 Shift Guide Absolute Movement [mm]:')# -- SHIFT GUIDE !!! aba 3 BASIC 
 labelShift.place(relx=0.01, rely=0.386, relwidth=0.299, relheight=0.05)
 
 labelX1arq=Label(frame_aba3,text='X:')# -- SHIFT GUIDE !!! aba 3 BASIC 
@@ -5233,12 +5914,12 @@ labelY1arq.place(relx=0.12, rely=0.44, relwidth=0.03, relheight=0.06)
 shiftXbasic=StringVar() # -- SHIFT GUIDE !!! aba 3 BASIC 
 textShiftXbasic=Entry(frame_aba3,font = '{Arial} 9',textvariable = shiftXbasic)
 textShiftXbasic.place(relx=0.035, rely=0.44, relwidth=0.07, relheight=0.05)
-shiftXbasic.set("")
+shiftXbasic.set("6.2")
 
 shiftYbasic=StringVar() # -- SHIFT GUIDE !!! aba 3 BASIC 
 textShiftYbasic=Entry(frame_aba3,font = '{Arial} 9',textvariable = shiftYbasic)
 textShiftYbasic.place(relx=0.14, rely=0.44, relwidth=0.07, relheight=0.05)
-shiftYbasic.set("")
+shiftYbasic.set("12.5")
 
 bOk=Button(frame_aba3,text='Go', command=bGoShiftBasic,style = "C.TButton") # -- SHIFT GUIDE !!! aba 3 BASIC 
 bOk.place(relx=0.22, rely=0.435, relwidth=0.06, relheight=0.06)
@@ -5281,7 +5962,7 @@ s=Scrollbar(richTextBasic,cursor="arrow")
 s.pack(side=RIGHT)
 s.config(command=richTextBasic.yview)
 richTextBasic.config(yscrollcommand=s.set)
-richTextBasic.insert (END,"\n# You can edit this form and save in a log file below.\n")
+richTextBasic.insert (END,"\n# You can edit this form and save it in a log file below.\n")
 
 
 #alterar posicao - diferent no 
@@ -5309,7 +5990,7 @@ buttonLimparB.place(relx=0.81, rely=0.92, relwidth=0.12, relheight=0.07)
 
 ########################################### ########################################### 
 #Ini ########################################### ABA 4 traj construction
-labelTraj=Label(frame_aba4, font= "{Arial black} 9",text='File Trajectory Construction')
+labelTraj=Label(frame_aba4, font= "{Arial black} 9",text='Trajectory File Construction')
 labelTraj.grid(column=0 ,row = 0)
 
 labelIniPos=Label(frame_aba4,text='Initial Position (X),(Y)[mm]:')
@@ -5351,6 +6032,7 @@ textYfim.place(relx=0.142, rely=0.19, relwidth=0.07, relheight=0.05)
 yf.set(" ")
 
 #--------------------------------------------
+
 radioArco=Radiobutton(frame_aba4,text='Arc [mm, degree]:', command=radioArcoClick, variable = traj, value=1)
 radioArco.place(relx=0.01, rely=0.27, relwidth=0.18, relheight=0.05)
 
@@ -5423,7 +6105,12 @@ s.pack(side=RIGHT)
 s.config(command=richTextTC.yview)
 richTextTC.config(yscrollcommand=s.set)
 
-richTextTC.insert(END,"#The command responses will appear in this form!\n\n#For automatic Trajectory Construction - Choose an integer \n Number of Lines.#\n#Use the text 'Traj.File NAMEe' to both buttons: \n 'create File' and 'Open File'#\n")
+richTextTC.insert(END,"#The command responses will appear in this form!\n\
+\n#For automatic Trajectory Construction - Choose an integer \n Number of Lines.#\
+\n#Use the 'Traj.File NAME' field to 'Create File' button'.\
+\n#Use the 'List of Files' to see all files saved on Controler.\
+\n#Use the 'Load File' button to select a file on Computer.\
+\n#Use 'Update File' to line edition (Software Abstraction Trajectories).\n")
 richTextTC.see(END)
 # Fim rich resposta comandos + scrollbar frame_aba4 - traj construction
 
@@ -5500,7 +6187,7 @@ buttonAbrirArq.place(relx=0.41, rely=0.926, relwidth=0.12, relheight=0.07)
 # ini ########################################### ABA 5 traj EXECUTION
 
 # ---- ini relative movements aba traj execution ----------------------------------------
-labelTraj=Label(frame_aba5, font= "{Arial black} 9",text='File Trajectory Execution')
+labelTraj=Label(frame_aba5, font= "{Arial black} 9",text='Trajectory File Execution')
 labelTraj.grid(column=0 ,row = 0)
 
 labelArq=Label(frame_aba5,text='Relative Movements:')
@@ -5541,7 +6228,7 @@ bYneg.place(relx=0.16, rely=0.296, relwidth=0.03, relheight=0.072)
 # ---- fim relative movements aba traj execution ----------------------------------------
 
 ### ini shift guide traj execution aba 5 frame_aba5 -----------------------------------------------------
-labelShift=Label(frame_aba5,text='Shift Guide Absolute Movement [mm]:')
+labelShift=Label(frame_aba5,text='Offset from Origin of Positioning Guide [mm]:')
 labelShift.place(relx=0.01, rely=0.386, relwidth=0.299, relheight=0.05)
 
 labelX1arq=Label(frame_aba5,text='X:')
@@ -5574,7 +6261,7 @@ s=Scrollbar(richTextBox1,cursor="arrow")
 s.pack(side=RIGHT)
 s.config(command=richTextBox1.yview)
 richTextBox1.config(yscrollcommand=s.set)
-richTextBox1.insert (END,"\n# You can edit this form and save in a log file below.\n") 
+richTextBox1.insert (END,"\n# You can edit this form and save it in a log file below.\n") 
 
 
 ##richTextBox1.insert(1.0,"\n#The command responses will appear at the top of this form!\n")
@@ -5639,20 +6326,29 @@ labelImag=Label(frame_aba6, font= "{Arial black} 9",text='Image File Execution')
 labelImag.grid(column=0 ,row = 0)
 
 labelTamanho=Label(frame_aba6,text='Substrate Size (X),(Y)[mm]:')
-labelTamanho.place(relx=0.01, rely=0.1, relwidth=0.21, relheight=0.05)
+labelTamanho.place(relx=0.01, rely=0.07, relwidth=0.21, relheight=0.05)
 
 subsX=StringVar() #Substrato tamanho X
 textXsubstrato=Entry(frame_aba6,font = '{Arial} 9',textvariable = subsX)
-textXsubstrato.place(relx=0.215, rely=0.10, relwidth=0.07, relheight=0.05)
+textXsubstrato.place(relx=0.215, rely=0.07, relwidth=0.07, relheight=0.05)
 subsX.set("6.5") 
 
 labelY1arq=Label(frame_aba6,text=',')
-labelY1arq.place(relx=0.285, rely=0.10, relwidth=0.02, relheight=0.06)
+labelY1arq.place(relx=0.285, rely=0.07, relwidth=0.02, relheight=0.06)
 
 subsY=StringVar() #Substrato tamanho Y
 textYsubstrato=Entry(frame_aba6,font = '{Arial} 9',textvariable = subsY)
-textYsubstrato.place(relx=0.2933, rely=0.10, relwidth=0.07, relheight=0.05)
+textYsubstrato.place(relx=0.2933, rely=0.07, relwidth=0.07, relheight=0.05)
 subsY.set("7.5")
+
+radioFP=Radiobutton(frame_aba6,text='Black Background/White Object ', command=cores_fundoPreto,  value=0)
+radioFP.place(relx=0.01, rely=0.13, relwidth=0.28, relheight=0.05)
+radioFP.invoke()
+
+
+radioFB=Radiobutton(frame_aba6,text='White Background/Black Object', command=cores_fundoBranco, value=1)
+radioFB.place(relx=0.01, rely=0.18, relwidth=0.28, relheight=0.05)
+
 
 labelnomeArq=Label(frame_aba6,text='IMAGE File Name:')
 labelnomeArq.place(relx=0.01, rely=0.25, relwidth=0.19, relheight=0.05)
@@ -5713,7 +6409,7 @@ bExecI.place(relx=0.25, rely=0.58, relwidth=0.14, relheight=0.12)
 
 
 # ---- ini shift guide aba 6 img ----------------------------------------
-labelShift=Label(frame_aba6,text='Shift Guide Absolute Movement [mm]:')# -- SHIFT GUIDE !!! aba 6 img
+labelShift=Label(frame_aba6,text='Offset from Origin of Positioning Guide [mm]:')# -- SHIFT GUIDE !!! aba 6 img
 labelShift.place(relx=0.01, rely=0.75, relwidth=0.299, relheight=0.05)
 
 labelX1arq=Label(frame_aba6,text='X:')# -- SHIFT GUIDE !!! aba 6 img
@@ -5748,8 +6444,8 @@ s.pack(side=RIGHT)
 s.config(command=richTextImg.yview)
 richTextImg.config(yscrollcommand=s.set)
 
-richTextImg.insert (END,"\n# You can edit this form and save in a log file below.\n")
-richTextImg.insert(END,"\n# Choose a monocromatic .BMP image \n# Insert Image_File_Name (Without .bmp)\n")
+richTextImg.insert (END,"\n# You can edit this form and save it in a log file below.\n")
+richTextImg.insert(END,"\n# Choose a monochromatic .BMP image \n# Insert Image_File_Name (Without .bmp)\n")
 richTextImg.insert(END,"\n# Keep the image scale (Substrate Size) for X and Y.\n ## Sequence to perform Synchronization:\n\
  # Read Image File -> \n # Create Displacement Windows ->\n # Enable external commands in Laser interface \n # 'GEXT: 1') -> Execute File.\n")
 richTextImg.see(END)
@@ -5781,101 +6477,125 @@ buttonLimparB.place(relx=0.81, rely=0.92, relwidth=0.12, relheight=0.07)
 labelImag=Label(frame_aba7, font= "{Arial black} 9",text='Image Processing/Execution')
 labelImag.grid(column=0 ,row = 0)
 
-labelTamanho=Label(frame_aba7,text='Image/Substrate Scale [%]:')
-labelTamanho.place(relx=0.01, rely=0.08, relwidth=0.21, relheight=0.05)
-
-escalaImg=StringVar() #Substrato tamanho X
-textEscalaImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = escalaImg)
-textEscalaImg.place(relx=0.215, rely=0.08, relwidth=0.07, relheight=0.05)
-##subsX.set("6.5") #nome anterior substratoX1 e Y1
-escalaImg.set("0.03") #nome anterior substratoX1 e Y1
-
 labelnomeArqImgXYZ=Label(frame_aba7,text='IMAGE File Name:')
-labelnomeArqImgXYZ.place(relx=0.01, rely=0.14, relwidth=0.19, relheight=0.05)
+labelnomeArqImgXYZ.place(relx=0.01, rely=0.08, relwidth=0.19, relheight=0.05)
 
 nomearqImgXYZ=StringVar() #NOME ARQUIVO  IMAGEM
 textNomeArqImgXYZ=Entry(frame_aba7,font = '{Arial} 9',textvariable = nomearqImgXYZ) #?????????????????????????????????????????????????????????
-textNomeArqImgXYZ.place(relx=0.014, rely=0.192, relwidth=0.19, relheight=0.05)
+textNomeArqImgXYZ.place(relx=0.014, rely=0.132, relwidth=0.19, relheight=0.05)
 ##nomearqImgXYZ.set("sobel-n1-skel (2)") #corrigir nomes repetidos (entre abas) - acrescentar diferença no sw Comum (sem abas).
-nomearqImgXYZ.set("panther-gimp_t") 
-
+nomearqImgXYZ.set("") 
 
 bLer=Button(frame_aba7,text='READ Image File', command=bLerArquivo_IMGP,style = "TButton")
-bLer.place(relx=0.219, rely=0.17, relwidth=0.17, relheight=0.12)
+bLer.place(relx=0.219, rely=0.09, relwidth=0.18, relheight=0.12)
 
 bLer=Button(frame_aba7,text=' TIPS ', command=buttonTipsImgContorno,style = "TButton")
-bLer.place(relx=0.429, rely=0.17, relwidth=0.15, relheight=0.12)
+bLer.place(relx=0.429, rely=0.09, relwidth=0.16, relheight=0.12)
 
 sep1 = Separator(frame_aba7,orient=HORIZONTAL)
-sep1.place(relx=0.01, rely=0.313, relwidth=0.56, relheight=0.01)
+sep1.place(relx=0.01, rely=0.223, relwidth=0.56, relheight=0.01)
 
 sep2 = Separator(frame_aba7,orient=HORIZONTAL)
-sep2.place(relx=0.01, rely=0.60, relwidth=0.56, relheight=0.05)
+sep2.place(relx=0.01, rely=0.51, relwidth=0.56, relheight=0.05)
 
 bSeg=Button(frame_aba7,text='LABEL Image Regions', command=bSegmentarImg,style = "TButton")
-bSeg.place(relx=0.04, rely=0.32, relwidth=0.20, relheight=0.12)
+bSeg.place(relx=0.04, rely=0.23, relwidth=0.20, relheight=0.12)
 
-bSeeSubI=Button(frame_aba7,text='SEE SubImage', command=bVerSubImagem_Seg)
-bSeeSubI.place(relx=0.28, rely=0.32, relwidth=0.20, relheight=0.12)
+bSeeSubI=Button(frame_aba7,text='SubImage Preview', command=bVerSubImagem_Seg)
+bSeeSubI.place(relx=0.28, rely=0.23, relwidth=0.20, relheight=0.12)
 bSeeSubI.config(state='disabled')
 
 labelRepImg=Label(frame_aba7,text='Nº:',font = '{Arial } 8')#
-labelRepImg.place(relx=0.48, rely=0.355, relwidth=0.04, relheight=0.05)
+labelRepImg.place(relx=0.48, rely=0.265, relwidth=0.04, relheight=0.05)
 
 subImg=StringVar() #Linha: 
 textSubImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = subImg)
-textSubImg.place(relx=0.506, rely=0.355, relwidth=0.04, relheight=0.05)
+textSubImg.place(relx=0.506, rely=0.265, relwidth=0.04, relheight=0.05)
 subImg.set(" ")
 textSubImg.config(state='disabled')
 
 bSobel=Button(frame_aba7,text="     Sobel EDGE map\n'Skeletonization' Image", command=bSobelSkelImg,style = "TButton")
-bSobel.place(relx=0.15, rely=0.46, relwidth=0.22, relheight=0.13)
+bSobel.place(relx=0.15, rely=0.37, relwidth=0.22, relheight=0.13)
+
+labelTamanho=Label(frame_aba7,text='Image/Substrate Scale [%]:')
+labelTamanho.place(relx=0.01, rely=0.52, relwidth=0.21, relheight=0.05)
+
+escalaImg=StringVar() #Substrato tamanho X
+textEscalaImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = escalaImg)
+textEscalaImg.place(relx=0.215, rely=0.52, relwidth=0.07, relheight=0.05)
+##subsX.set("6.5") #nome anterior substratoX1 e Y1
+escalaImg.set("100") #nome anterior substratoX1 e Y1
+
 
 labelnomeArqSalvarImgXYZ=Label(frame_aba7,text='Trajectory File Name:')
-labelnomeArqSalvarImgXYZ.place(relx=0.01, rely=0.652, relwidth=0.19, relheight=0.05)
+labelnomeArqSalvarImgXYZ.place(relx=0.01, rely=0.572, relwidth=0.19, relheight=0.05)
 
 nomearqSalvarImgXYZ=StringVar() #NOME ARQUIVO IMG - TRAJECTORY XY
 textNomeArqSalvarImgXYZ=Entry(frame_aba7,font = '{Arial} 9',textvariable = nomearqSalvarImgXYZ) 
-textNomeArqSalvarImgXYZ.place(relx=0.014, rely=0.702, relwidth=0.19, relheight=0.05)
+textNomeArqSalvarImgXYZ.place(relx=0.014, rely=0.622, relwidth=0.19, relheight=0.05)
 nomearqSalvarImgXYZ.set("n1-teste") #
 
-labelFrom=Label(frame_aba7,text='    Number\nFrom  -   To ',font = '{Arial } 8')#
-labelFrom.place(relx=0.243, rely=0.635, relwidth=0.12, relheight=0.08)
-
-arqFrom=StringVar() #Linha: 
-textArqFrom=Entry(frame_aba7,font = '{Arial} 9',textvariable = arqFrom)
-textArqFrom.place(relx=0.235, rely=0.702, relwidth=0.05, relheight=0.05)
-arqFrom.set(" ")
-
-arqTo=StringVar() #Linha: Coord Y1 Y_final
-textArqTo=Entry(frame_aba7,font = '{Arial} 9',textvariable = arqTo)
-textArqTo.place(relx=0.2899, rely=0.702, relwidth=0.05, relheight=0.05)
-arqTo.set(" ")
+##labelFrom=Label(frame_aba7,text='    Number\nFrom  -   To ',font = '{Arial } 8')#
+##labelFrom.place(relx=0.243, rely=0.635, relwidth=0.12, relheight=0.08)
+##
+##arqFrom=StringVar() #Linha: 
+##textArqFrom=Entry(frame_aba7,font = '{Arial} 9',textvariable = arqFrom)
+##textArqFrom.place(relx=0.235, rely=0.702, relwidth=0.05, relheight=0.05)
+##arqFrom.set(" ")
+##
+##arqTo=StringVar() #Linha: Coord Y1 Y_final
+##textArqTo=Entry(frame_aba7,font = '{Arial} 9',textvariable = arqTo)
+##textArqTo.place(relx=0.2899, rely=0.702, relwidth=0.05, relheight=0.05)
+##arqTo.set(" ")
 
 bXYZtraj=Button(frame_aba7,text='XY Trajectory', command=bTestePVT,style = "TButton")
-bXYZtraj.place(relx=0.3549, rely=0.68, relwidth=0.18, relheight=0.12)
+bXYZtraj.place(relx=0.3149, rely=0.55, relwidth=0.18, relheight=0.12)
+
 
 labelExecImg=Label(frame_aba7,text='Execution:')
-labelExecImg.place(relx=0.012, rely=0.795, relwidth=0.19, relheight=0.05)
+labelExecImg.place(relx=0.012, rely=0.69, relwidth=0.19, relheight=0.05)
+
+labelShifimg=Label(frame_aba7,text='Offset from Origin of Positioning Guide [mm]:')# -- SHIFT GUIDE !!! aba origin
+labelShifimg.place(relx=0.012, rely=0.73, relwidth=0.299, relheight=0.05)
+
+labelX1arq=Label(frame_aba7,text='X:')# -- SHIFT GUIDE !!! aba origin
+labelX1arq.place(relx=0.016, rely=0.783,  relwidth=0.02, relheight=0.05)######
+labelY1arq=Label(frame_aba7,text='Y:')
+labelY1arq.place(relx=0.11, rely=0.783, relwidth=0.03, relheight=0.05)
+
+shiftXip=StringVar() # -- SHIFT GUIDE !!! aba origin 
+textShiftXip=Entry(frame_aba7,font = '{Arial} 9',textvariable = shiftXip)
+textShiftXip.place(relx=0.035, rely=0.783, relwidth=0.07, relheight=0.05)
+shiftXip.set("")
+
+shiftYip=StringVar() # -- SHIFT GUIDE !!! aba origin 
+textShiftYip=Entry(frame_aba7,font = '{Arial} 9',textvariable = shiftYip)
+textShiftYip.place(relx=0.13, rely=0.783, relwidth=0.07, relheight=0.05)
+shiftYip.set("")
+
+bOkImgP=Button(frame_aba7,text='Go', command=bGoShiftImgP,style = "C.TButton") # -- SHIFT GUIDE !!! aba 8 origin
+bOkImgP.place(relx=0.22, rely=0.773, relwidth=0.06, relheight=0.06)
+
+
 
 labelVelImg=Label(frame_aba7,text='V(mm/s)',font = '{Arial } 8')#
-labelVelImg.place(relx=0.018, rely=0.83, relwidth=0.12, relheight=0.05)
+labelVelImg.place(relx=0.02, rely=0.85, relwidth=0.12, relheight=0.05)
 
 velImg=StringVar() #Linha: 
 textVelArqImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = velImg)
-textVelArqImg.place(relx=0.020, rely=0.87, relwidth=0.05, relheight=0.05)
+textVelArqImg.place(relx=0.020, rely=0.89, relwidth=0.05, relheight=0.05)
 velImg.set(" ")
 
 labelRepImg=Label(frame_aba7,text='NºExec.',font = '{Arial } 8')#
-labelRepImg.place(relx=0.089, rely=0.83, relwidth=0.07, relheight=0.05)
+labelRepImg.place(relx=0.089, rely=0.85, relwidth=0.07, relheight=0.05)
 
 repImg=StringVar() #Linha: Coord Y1 Y_final
 textNrepImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = rep)
-textNrepImg.place(relx=0.0919, rely=0.87, relwidth=0.05, relheight=0.05)
+textNrepImg.place(relx=0.0919, rely=0.89, relwidth=0.05, relheight=0.05)
 repImg.set("1")
 
 bExecImgProcess=Button(frame_aba7,text='EXECUTE File', command=bExecImgProc,style = "TButton") #execucao traj
-bExecImgProcess.place(relx=0.174, rely=0.848, relwidth=0.18, relheight=0.11)
+bExecImgProcess.place(relx=0.174, rely=0.868, relwidth=0.18, relheight=0.11)
 
 
 
@@ -5891,40 +6611,42 @@ s.pack(side=RIGHT)
 s.config(command=richTextImgP.yview)
 richTextImgP.config(yscrollcommand=s.set)
 
-richTextImgP.insert (END,"\n# You can edit this form and save in a log file below.\n")
-richTextImgP.insert(END," \n# Choose a .PNG to image processing - \n# LABEL, SOBEL, SKELETONIZE \n\
-\n# Choose a monocromatic \n# .BMP image to create a Trajectory File\n")
+richTextImgP.insert (END,"\n# You can edit this form and save it in a log file below.\n")
+richTextImgP.insert(END," \n# This Tab is for Images with:\n\
+# 'Black Backgroung / White Object(s)' \n\
+# Choose a .PNG file to perform image processing - \n# LABEL, SOBEL, SKELETONIZE \n\
+\n# Choose a monochromatic .BMP image to: \n# Read Image File or \n# Create a Trajectory File (XY trajectory) button\n")
 # Insert  Image_File_Name \n#(Without .png OR .bmp)\n")
 richTextImgP.see(END)
 
 labelnomeArqLogI=Label(frame_aba7,text='Log File NAME:')
 labelnomeArqLogI.place(relx=0.62, rely=0.85, relwidth=0.15, relheight=0.05)
 
-nomearqLogImg=StringVar() #NOME ARQUIVO LOG aba 3 
-textNomeArqLogImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = nomearqLogImg)
+nomearqLogImgP=StringVar() #NOME ARQUIVO LOG aba 3 
+textNomeArqLogImg=Entry(frame_aba7,font = '{Arial} 9',textvariable = nomearqLogImgP)
 textNomeArqLogImg.place(relx=0.750, rely=0.85, relwidth=0.2, relheight=0.05)
-nomearqLogImg.set("")
+nomearqLogImgP.set("")
 
-buttonLogI=Button(frame_aba7,text='Create a Log File',command=bCriarLogFile_img,style = "TButton")
-buttonLogI.place(relx=0.63, rely=0.92, relwidth=0.15, relheight=0.07)
+buttonLogIp=Button(frame_aba7,text='Create a Log File',command=bCriarLogFile_imgP,style = "TButton")
+buttonLogIp.place(relx=0.63, rely=0.92, relwidth=0.15, relheight=0.07)
 
-buttonLimparB=Button(frame_aba7,text='Clear Form',command=buttonLimparClickImg,style = "TButton")
-buttonLimparB.place(relx=0.81, rely=0.92, relwidth=0.12, relheight=0.07)
+buttonLimparIp=Button(frame_aba7,text='Clear Form',command=buttonLimparClickImgP,style = "TButton")
+buttonLimparIp.place(relx=0.81, rely=0.92, relwidth=0.12, relheight=0.07)
 
 
 # fim ########################################### ABA 7 Img proc label sobel skel
 
-########################################### ########################################### 
+######################################### ########################################### 
 # ini ########################################### ABA 8 ORIGIN
 
-labelO=Label(frame_aba8, font= "{Arial black} 9",text='Origin Set')
+labelO=Label(frame_aba8, font= "{Arial black} 9",text='Redefine Origin')
 labelO.grid(column=0 ,row = 0)
 
 
-buttonNovaGuia=Button(frame_aba8,text='    DEFINE GUIDE \n   Actual Position   ', command=buttonDefineGuiaNova,style = "TButton")
+buttonNovaGuia=Button(frame_aba8,text='  DEFINE GUIDE ORIGIN \n       Current Position   ', command=buttonDefineGuiaNova,style = "TButton")
 buttonNovaGuia.place(relx=0.03, rely=0.79, relwidth=0.23, relheight=0.12)
 
-buttonResetGuia=Button(frame_aba8,text='     RESET GUIDE \n Previous Position ', command=buttonResetGuiaNova,style = "TButton")
+buttonResetGuia=Button(frame_aba8,text='     RESET GUIDE ORIGIN \n         Previous Position ', command=buttonResetGuiaNova,style = "TButton")
 buttonResetGuia.place(relx=0.28, rely=0.79, relwidth=0.23, relheight=0.12)
 
 labelRichTextO=Label(frame_aba8,text='Command responses:')
@@ -5959,7 +6681,7 @@ buttonVerLogOorigin=Button(frame_aba8,text='VIEW LOG FILE', command=buttonVerLog
 buttonVerLogOorigin.place(relx=0.185, rely=0.6, relwidth=0.18, relheight=0.12)
 
 # ---- ini shift guide aba 8 origin ----------------------------------------
-labelShift=Label(frame_aba8,text='Shift Guide Absolute Movement [mm]:')# -- SHIFT GUIDE !!! aba origin
+labelShift=Label(frame_aba8,text='Offset from Origin of Positioning Guide [mm]:')# -- SHIFT GUIDE !!! aba origin
 labelShift.place(relx=0.01, rely=0.386, relwidth=0.299, relheight=0.05)
 
 labelX1arq=Label(frame_aba8,text='X:')# -- SHIFT GUIDE !!! aba origin
@@ -5983,35 +6705,43 @@ bOkOrigin.place(relx=0.22, rely=0.435, relwidth=0.06, relheight=0.06)
 ##btry=Button(frame_aba8,text='Go1', command=buttonDefineGuiaNova1,style = "C.TButton") # -- SHIFT GUIDE !!! aba 8 origin
 ####bCriaArquivoOrigin(x,y)
 ##btry.place(relx=0.29, rely=0.435, relwidth=0.06, relheight=0.06)
-# ---- fim shift guide aba origin ----------------------------------------
-#***########################################################################################***#
 
-#Combo abaTC---------------------------------------------------------------------------------------------------------
 lista_arquivos = ListarArquivos_Combo()
 
 labelShift=Label(frame_aba4,text='List of FILES:')# -- SHIFT GUIDE !!! aba origin
 labelShift.place(relx=0.01, rely=0.93, relwidth=0.10, relheight=0.05)
 
 arq_combo = StringVar()
-
+##box = Combobox(frame_aba8,textvariable=arq_combo, state='readonly')
 box = Combobox(frame_aba4,textvariable=arq_combo)
 box['values'] = lista_arquivos
 box.current(0)
 box.place(relx=0.1026, rely=0.93, relwidth=0.31, relheight=0.06)
+##richTextTC.place(relx=0.013, rely=0.543, relwidth=0.52, relheight=0.365)
+##arq_combo.trace('r', tracer)
 box.bind('<<ComboboxSelected>>',handler1)
-#-----------------------------------------------------------------------------------------------------------------
 
-#***########################################################################################***#
+image2 = Image.open("Octocat.png") #Logotipo CTI
+photo2 = ImageTk.PhotoImage(image2)
+
+label_logo2 = Label(frame_aba9,image=photo2)
+label_logo2.image = photo2 
+label_logo2.place(relx=0.00, rely=0.10, relwidth=0.35, relheight=0.30)
+
+
+
 labelabout = Label(frame_aba9,text="Software desenvolvido durante projeto de mestrado na FEEC Unicamp\n\n\
  'Software de Controle para Sistema de Processamento de Materiais e Dispositivos por Laser Ultravioleta'\n\n\
  Aluna Patrícia Domingues.\n\n\
- Software disponível no web hosting GitHub:\n\n\
+ Software disponível (GNU General Public License/Licença Pública Geral - GPL 2.0):\n\n\
   https://github.com/patricia-sdomin   ")
 labelabout.place(relx=0.01, rely=0.10, relwidth=0.35, relheight=0.19)
 labelabout.pack(padx=130, pady=130)
-#***########################################################################################***#
-#***########################################################################################***#
 
+
+# ---- fim shift guide aba origin ----------------------------------------
+#***########################################################################################***#
+#***########################################################################################***#
 abas.add(frame_aba1,text="Presentation")
 abas.add(frame_aba2,text="Initialization")
 abas.add(frame_aba3,text="Basic Movements")
@@ -6019,7 +6749,7 @@ abas.add(frame_aba4,text="Trajectory Construction")
 abas.add(frame_aba5,text="Trajectory Execution")
 abas.add(frame_aba6,text="Image Execution") #image raster
 abas.add(frame_aba7,text="Image Processing")
-abas.add(frame_aba8,text="Origin Set")
+abas.add(frame_aba8,text="Set Origin")
 abas.add(frame_aba9,text="About")
 ##abas.add(frame_aba10,text="  Help  ")
 abas.select(frame_aba1)
