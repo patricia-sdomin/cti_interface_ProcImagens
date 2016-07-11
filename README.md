@@ -33,6 +33,17 @@ Sequence to perform Synchronization:
 
 * GEXT: (at laser interface): this command enables or disables the use of the gate control on the analog port - on the power supply. "GEXT: 1" - use the signals on the analog inputs.
 
- 
-@ISSUES: images
+Para desenvolvimento deste trabalho, Os seguintes equipamentos do laboratório/CTI foram utilizados:
+
+- Newport RP Reliance Sealed Hole Table Top (mesa com sistema de amortecimento pneumático).
+- Pulseo - High Peak Power, Diode Pumped, Q-Switched, 355nm Laser System – Ultraviolet pulses - Laser head - (Laser ultravioleta pulsado) - Neodymium-doped yttrium orthovanadate (Vanadate Crystals) - Nd: YVO_4.
+- Newport Spectra-Physics Power Supply model J200 (Fonte do laser).
+- Elementos mecânicos de posicionamento e alinhamento.
+- Componentes óticos específicos para o comprimento de onda do laser: três espelhos dielétricos com recobrimento antirrefletor e uma lente plano-convexa de ajuste focal.
+- Newport High Performance Motion Controller - Driver XPS - C8 (controladora de movimentos) com sistema operacional de tempo real VxWorks 5.4.2; kernel 1.25; Web-Server versão 2.5.2; stages database versão 2.6.5.
+- Newport High-Performance Long-Travel Linear Motor Stages - IMS400-LM (Posicionadores Lineares) – eixos X e Y, com as seguintes configurações: percurso: 400mm; resolução: 0,02μm; velocidade máxima: 500mm/s.
+- Newport Precision Vertical Stage – VP-5ZA (Posicionador Vertical) – eixo Z, com as seguintes configurações: percurso: 4,8mm; resolução: 0,06μm; velocidade: 5mm/s. Este posicionador é utilizado para realizar o ajuste focal conforme a espessura do substrato.
+- Newport Motorized Stepper - Linear Actuator – CMA-25CCCL (Atuador Linear), com as seguintes configurações: percurso: 25mm; resolução: 0,2μm; velocidade: 0.4mm/s. O Atuador é utilizado quando é necessário acomodar peças com espessura maior que o deslocamento do eixo Z. Ele move verticalmente o braço da lente de foco para manter o devido ajuste focal.
+- PolyScience Recirculator Chiller (Recirculador ligado à fonte e ao laser head).
+
 
