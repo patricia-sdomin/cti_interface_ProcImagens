@@ -65,3 +65,21 @@ Sequence to perform Synchronization:
 
 * GEXT: (at laser interface): this command enables or disables the use of the gate control on the analog port - on the power supply. "GEXT: 1" - use the signals on the analog inputs.
 
+
+### Software Application
+
+* Sensor Gas Electrodes:     
+(a) Alumina (Al<sub>2</sub>O<sub>3</sub>) substrate with gold deposition: interdigitaded electrodes being drawn.   (b) Alumina substrate with platinum deposition: laser focusing in between the pieces for later division.
+![exemple](https://user-images.githubusercontent.com/16061028/35770579-231f57a0-0905-11e8-8d57-f8512f6eef5d.png)
+
+Sensor Gas Electrodes: 
+![example2](https://user-images.githubusercontent.com/16061028/35770571-0dbbe05e-0905-11e8-85e5-f152b60381a7.png)
+
+Electrode Scanning Electron Microscope image:
+![example3](https://user-images.githubusercontent.com/16061028/35770641-357f8c5c-0906-11e8-8231-b262cff20024.png)
+
+   
+       
+* PMMA (polymethylmethacrylate) mold for a PDMS (Polydimethylsiloxane) microfluidic device  
+Surface map of a PMMA mold obtained by the laser swelling method: 
+![exemple4](https://user-images.githubusercontent.com/16061028/35770688-ec32f6b4-0906-11e8-8faf-7f0312226c68.png)
