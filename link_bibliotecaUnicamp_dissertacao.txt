@@ -1,9 +1,0 @@
-Para acessar o site e efetuar o download é necessário realizar um cadastro.
-
-http://www.bibliotecadigital.unicamp.br/document/?code=000962345&fd=y
-
-Consultar: Faculdade de Engenharia Elétrica e de Computação - FEEC
-
-Título [Principal]: Software de controle para sistema de processamento de materiais e dispositivos por laser ultravioleta
-Título [Outro Idioma]: Control software for processing of materials and devices by ultraviolet laser
-Autor(es): Patricia Silva Domingues
