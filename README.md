@@ -30,6 +30,9 @@ The system is formed by the following components:
 Lab picture: 
 ![labpicture](https://user-images.githubusercontent.com/16061028/35770075-1e018a80-08fc-11e8-847d-281217b31fb4.png)
 
+Schematic drawing
+![draw](https://user-images.githubusercontent.com/16061028/35770450-ab2505f8-0902-11e8-9fa7-eb38336681bf.png)
+
 Software integration
 ![int](https://user-images.githubusercontent.com/16061028/35770044-b707ef40-08fb-11e8-803b-2398ba505637.png)
 
