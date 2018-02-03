@@ -36,9 +36,19 @@ Software integration
 "PC Host" <-> "Motion Controller" conection
 ![tcpipcon](https://user-images.githubusercontent.com/16061028/35769965-6a5053e6-08fa-11e8-9940-ecb0fbf3847b.png)
 
-Software Interface: Newport XPS C8 Motion Controller with:
+
+Sofware Overview: 
+![integration2](https://user-images.githubusercontent.com/16061028/35770344-52ca9c94-0900-11e8-8561-0a180e922a44.png)
+
+
+### Software Interface
 
 *Image processing:
+
+Image processing guide:
+
+![guide_imgp](https://user-images.githubusercontent.com/16061028/35770393-7b0e5dca-0901-11e8-9bed-6e18d76a8a74.png)
+
 - Label Image Regions: Segmentation-use .PNG file.
 - Sobel Edge map: Image edge detection Filter.
 - Skeletonization: Reduces binary objects to 1 pixel wide representations.
@@ -52,5 +62,3 @@ Sequence to perform Synchronization:
 
 * GEXT: (at laser interface): this command enables or disables the use of the gate control on the analog port - on the power supply. "GEXT: 1" - use the signals on the analog inputs.
 
-Sofware Overview: 
-![integration2](https://user-images.githubusercontent.com/16061028/35770344-52ca9c94-0900-11e8-8561-0a180e922a44.png)
