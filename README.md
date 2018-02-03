@@ -43,4 +43,4 @@ Para desenvolvimento deste trabalho, Os seguintes equipamentos do laboratório/C
 - Newport Motorized Stepper - Linear Actuator – CMA-25CCCL (Atuador Linear), with the following configurations: travel: 25mm; resolution: 0,2μm; speed: 0.4mm/s. The actuator is used when it is necessary to accommodate parts with a thickness greater than Z axis offset. It vertically moves the focus lens arm to keep proper focal adjustment.
 - PolyScience Recirculator Chiller (Recirculador ligado à fonte e ao laser head).
 
-
+![Screenshot](Integracao.png)
