@@ -33,7 +33,7 @@ Lab picture:
 Software integration
 ![int](https://user-images.githubusercontent.com/16061028/35770044-b707ef40-08fb-11e8-803b-2398ba505637.png)
 
-"PC Host" <-> "Motion Controller" conection
+"PC Host" <-> "Motion Controller" connection
 ![tcpipcon](https://user-images.githubusercontent.com/16061028/35769965-6a5053e6-08fa-11e8-9940-ecb0fbf3847b.png)
 
 
