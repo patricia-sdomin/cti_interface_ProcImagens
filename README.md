@@ -52,4 +52,5 @@ Sequence to perform Synchronization:
 
 * GEXT: (at laser interface): this command enables or disables the use of the gate control on the analog port - on the power supply. "GEXT: 1" - use the signals on the analog inputs.
 
-
+Sofware Overview: 
+![integration2](https://user-images.githubusercontent.com/16061028/35770344-52ca9c94-0900-11e8-8561-0a180e922a44.png)
